@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth/authContext";
 import { useToast } from "@/components/ui/toast";
 
 export function useMyList() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const toast = useToast();
   const [list, setList] = useState<Movie[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,27 +28,24 @@ export function useMyList() {
   const addMovie = useCallback((movie: Movie) => {
     if (!user) {
       toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm phim vào danh sách yêu thích!");
-      openAuthModal("login");
       return;
     }
     myListService.add(movie);
     toast.success("Đã thêm vào yêu thích", `"${movie.title}" đã được lưu vào danh sách.`);
-  }, [user, openAuthModal, toast]);
+  }, [user, toast]);
 
   const removeMovie = useCallback((id: string) => {
     if (!user) {
       toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để quản lý danh sách yêu thích!");
-      openAuthModal("login");
       return;
     }
     myListService.remove(id);
     toast.info("Đã xóa khỏi yêu thích", "Phim đã được gỡ khỏi danh sách yêu thích.");
-  }, [user, openAuthModal, toast]);
+  }, [user, toast]);
 
   const toggleMovie = useCallback((movie: Movie) => {
     if (!user) {
       toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm phim vào danh sách yêu thích!");
-      openAuthModal("login");
       return false;
     }
     const added = myListService.toggle(movie);
@@ -58,7 +55,7 @@ export function useMyList() {
       toast.info("Đã xóa khỏi yêu thích", `"${movie.title}" đã được gỡ khỏi danh sách.`);
     }
     return added;
-  }, [user, openAuthModal, toast]);
+  }, [user, toast]);
 
   const isInList = useCallback((id: string): boolean => {
     return myListService.has(id);
