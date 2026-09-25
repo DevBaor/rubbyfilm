@@ -27,7 +27,7 @@ export function useMyList() {
 
   const addMovie = useCallback((movie: Movie) => {
     if (!user) {
-      toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm phim vào danh sách yêu thích!");
+      toast.info("Oop!", "Bạn hãy đăng nhập để thêm vào danh sách yêu thích nha!");
       return;
     }
     myListService.add(movie);
@@ -36,7 +36,7 @@ export function useMyList() {
 
   const removeMovie = useCallback((id: string) => {
     if (!user) {
-      toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để quản lý danh sách yêu thích!");
+      toast.info("Oop!", "Bạn hãy đăng nhập để thêm vào danh sách yêu thích nha!");
       return;
     }
     myListService.remove(id);
@@ -45,7 +45,7 @@ export function useMyList() {
 
   const toggleMovie = useCallback((movie: Movie) => {
     if (!user) {
-      toast.info("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm phim vào danh sách yêu thích!");
+      toast.info("Oop!", "Bạn hãy đăng nhập để thêm vào danh sách yêu thích nha!");
       return false;
     }
     const added = myListService.toggle(movie);
