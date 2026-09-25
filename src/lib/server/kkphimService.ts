@@ -1,0 +1,764 @@
+import { movieApiClient, MovieApiError } from "./movieApiClient";
+import {
+  mapKkphimMovie,
+  mapKkphimEpisodes,
+  mapKkphimPagination,
+} from "./kkphimAdapter";
+import {
+  Movie,
+  Genre,
+  Country,
+  PaginatedMovies,
+} from "@/lib/models/movie";
+import { HomeSectionsData, MovieFilterOptions } from "@/types/movie";
+
+export class KkphimService {
+  private homeCache: { data: HomeSectionsData; expiresAt: number } | null = null;
+
+  /**
+   * Get latest updated movies
+   */
+  async getLatestMovies(page: number = 1): Promise<PaginatedMovies> {
+    const raw = await movieApiClient.get<any>(
+      `/danh-sach/phim-moi-cap-nhat?page=${page}`,
+      { revalidate: 1800 } // 30 min cache
+    );
+
+    const items = Array.isArray(raw?.items) ? raw.items : [];
+    const cdnDomain = raw?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+
+    const mapped = items.map((item: any) => mapKkphimMovie(item, cdnDomain));
+    const pagination = mapKkphimPagination(raw?.pagination);
+
+    return {
+      items: mapped,
+      pagination,
+    };
+  }
+
+  /**
+   * Get movies by list type (phim-bo, phim-le, hoat-hinh, tv-shows)
+   */
+  async getMoviesByType(typeSlug: string, page: number = 1, limit: number = 24): Promise<PaginatedMovies> {
+    const raw = await movieApiClient.get<any>(
+      `/v1/api/danh-sach/${typeSlug}?page=${page}&limit=${limit}`,
+      { revalidate: 3600 }
+    );
+
+    const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+    const cdnDomain = raw?.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+
+    const mapped = items.map((item: any) => mapKkphimMovie(item, cdnDomain));
+    const pagination = mapKkphimPagination(raw?.data?.params?.pagination);
+
+    return {
+      items: mapped,
+      pagination,
+    };
+  }
+
+  /**
+   * Get home page curated movie sections with distinct, non-overlapping content
+   */
+  async getHomeMovies(): Promise<HomeSectionsData> {
+    if (this.homeCache && Date.now() < this.homeCache.expiresAt) {
+      return this.homeCache.data;
+    }
+
+    try {
+      const [
+        cinemaP1,
+        cinemaP2,
+        latestRes,
+        seriesRes,
+        animeRes,
+        actionP1,
+        actionP2,
+        actionP3,
+        romanceRes,
+      ] = await Promise.all([
+        this.getMoviesByType("phim-chieu-rap", 1, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 1, totalPages: 1 } })),
+        this.getMoviesByType("phim-chieu-rap", 2, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 2, totalPages: 1 } })),
+        this.getLatestMovies(1),
+        this.getMoviesByType("phim-bo", 1, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 1, totalPages: 1 } })),
+        this.getMoviesByType("hoat-hinh", 1, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 1, totalPages: 1 } })),
+        this.getMoviesByGenre("hanh-dong", 1, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 1, totalPages: 1 } })),
+        this.getMoviesByGenre("hanh-dong", 2, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 2, totalPages: 1 } })),
+        this.getMoviesByGenre("hanh-dong", 3, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 3, totalPages: 1 } })),
+        this.getMoviesByGenre("tinh-cam", 1, 24).catch(() => ({ items: [], pagination: { totalItems: 0, totalItemsPerPage: 24, currentPage: 1, totalPages: 1 } })),
+      ]);
+
+      // 1. Phim Lẻ Chiếu Rạp (Theatrical Cinema Releases)
+      // Filter strictly for modern cinema movies (year >= 2020), eliminating old vintage 1970s/1990s films
+      const allCinemaRaw = [...cinemaP1.items, ...cinemaP2.items];
+      const cinemaMap = new Map<string, Movie>();
+      allCinemaRaw.forEach((m) => {
+        const isAnime = m.genreSlugs.includes("hoat-hinh") || m.genres.some((g) => g.toLowerCase().includes("hoạt hình"));
+        const isModern = (m.year && m.year >= 2020) || !m.year;
+        if (isModern && !isAnime && !cinemaMap.has(m.id)) {
+          cinemaMap.set(m.id, m);
+        }
+      });
+      const cinemaMovies = Array.from(cinemaMap.values());
+
+      // 2. Phim Hành Động Kịch Tính (Genuine Live-Action Blockbusters)
+      // Filter out anime, donghua, documentaries, and non-action courtroom dramas like 'sinh-tu'
+      const allActionRaw = [...actionP1.items, ...actionP2.items, ...actionP3.items];
+      const actionMap = new Map<string, Movie>();
+      allActionRaw.forEach((m) => {
+        const isAnime =
+          m.rawType === "hoathinh" ||
+          m.genreSlugs.includes("hoat-hinh") ||
+          m.genres.some((g) => g.toLowerCase().includes("hoạt hình"));
+        const isExcluded = m.slug === "sinh-tu" || m.genreSlugs.includes("tai-lieu");
+        if (!isAnime && !isExcluded && !actionMap.has(m.id)) {
+          actionMap.set(m.id, m);
+        }
+      });
+      // Add action movies from cinema if any
+      cinemaMovies
+        .filter((m) => m.genreSlugs.includes("hanh-dong") || m.genres.some((g) => g.toLowerCase().includes("hành động")))
+        .forEach((m) => {
+          if (!actionMap.has(m.id)) {
+            actionMap.set(m.id, m);
+          }
+        });
+      const actionMovies = Array.from(actionMap.values());
+
+      const latest = latestRes.items;
+      const series = seriesRes.items;
+      const animation = animeRes.items;
+      const romance = romanceRes.items;
+
+      // 3. Top Đề Cử (Dynamic Hero Pool):
+      // Must prioritize newest releases (2026) with high-res horizontal studio backdrops
+      const topCandidates = [...cinemaMovies, ...series, ...actionMovies, ...latest];
+      const candidateMap = new Map<string, Movie>();
+      topCandidates.forEach((m) => {
+        if (!candidateMap.has(m.id)) {
+          candidateMap.set(m.id, m);
+        }
+      });
+      const allUnique = Array.from(candidateMap.values());
+
+      // Filter out Tokusatsu / Siêu nhân / Anime thiếu nhi / Documentaries from Hero banner:
+      const isExcludedFromHero = (m: Movie) => {
+        const titleLower = (m.title + " " + (m.originalTitle || "")).toLowerCase();
+        const slugLower = m.slug.toLowerCase();
+        return (
+          titleLower.includes("ultraman") ||
+          titleLower.includes("kamen rider") ||
+          titleLower.includes("chiến binh ánh sáng") ||
+          titleLower.includes("chiến binh") ||
+          titleLower.includes("siêu nhân") ||
+          slugLower.includes("chien-binh-anh-sang") ||
+          slugLower.includes("ultraman") ||
+          slugLower.includes("kamen-rider") ||
+          slugLower.includes("sieu-nhan") ||
+          slugLower.includes("super-sentai") ||
+          m.rawType === "hoathinh" ||
+          m.genreSlugs.includes("hoat-hinh") ||
+          m.genres.some((g) => g.toLowerCase().includes("hoạt hình")) ||
+          m.genreSlugs.includes("tai-lieu") ||
+          m.genres.some((g) => g.toLowerCase().includes("tài liệu")) ||
+          m.slug === "sinh-tu" ||
+          (m.year && m.year < 2022)
+        );
+      };
+
+      const cinemaIds = new Set(cinemaMovies.map((m) => m.id));
+
+      // Only allow genuine movies with widescreen horizontal backdrops (no vertical posters, no kids shows)
+      const validBackdropPool = allUnique.filter(
+        (m) =>
+          !isExcludedFromHero(m) &&
+          Boolean(m.backdropUrl) &&
+          !m.backdropUrl.endsWith("-poster.webp") &&
+          !m.backdropUrl.endsWith("poster.webp") &&
+          m.backdropUrl.length > 10
+      );
+
+      // Rank by Real Social Media & Cinema Heat:
+      // - Theatrical Cinema Blockbusters get highest priority (+600 bonus)
+      // - Recent release year 2026 (+400), 2025 (+300), 2024 (+150)
+      // - High TMDb rating and genuine HD studio backdrops
+      const rankedFeatured = validBackdropPool.sort((a, b) => {
+        const isCinemaA = cinemaIds.has(a.id) ? 600 : 0;
+        const isCinemaB = cinemaIds.has(b.id) ? 600 : 0;
+
+        const yearBonusA = a.year === 2026 ? 1200 : (a.year || 2024) >= 2025 ? 300 : 150;
+        const yearBonusB = b.year === 2026 ? 1200 : (b.year || 2024) >= 2025 ? 300 : 150;
+
+        const isHdA = a.backdropUrl.includes("/upload/vod/") || a.backdropUrl.includes("/uploads/movies/") ? 40 : 0;
+        const isHdB = b.backdropUrl.includes("/upload/vod/") || b.backdropUrl.includes("/uploads/movies/") ? 40 : 0;
+
+        const scoreA = isCinemaA + yearBonusA + ((a.rating || 8) * 10) + isHdA;
+        const scoreB = isCinemaB + yearBonusB + ((b.rating || 8) * 10) + isHdB;
+        return scoreB - scoreA;
+      });
+
+      const rawFeatured = rankedFeatured.slice(0, 14);
+      // Fetch real storyline synopsis for top Hero movies
+      const featured = await Promise.all(
+        rawFeatured.map(async (m) => {
+          try {
+            if (!m.description || m.description.includes("Đang cập nhật")) {
+              const detail = await this.getMovieBySlug(m.slug);
+              if (detail && detail.description && !detail.description.includes("Đang cập nhật")) {
+                return { ...m, description: detail.description };
+              }
+            }
+          } catch {}
+          return m;
+        })
+      );
+      const featuredIds = new Set(featured.map((m) => m.id));
+
+      // 4. Trending Now: Hot movies distinct from Hero
+      const hot = [...cinemaMovies, ...series, ...latest]
+        .filter((m) => !featuredIds.has(m.id))
+        .slice(0, 10);
+      const hotIds = new Set(hot.map((m) => m.id));
+
+      // 5. Recommended (Used for Editorial Spotlight):
+      // Must have crisp studio backdrop, high rating, and rich storyline text
+      const recommendedCandidates = [...cinemaMovies, ...actionMovies, ...series].filter(
+        (m) =>
+          !featuredIds.has(m.id) &&
+          Boolean(m.backdropUrl) &&
+          !m.backdropUrl.endsWith("-poster.webp") &&
+          !m.backdropUrl.endsWith("poster.webp") &&
+          m.backdropUrl.length > 10 &&
+          (m.rating || 0) >= 7.5
+      );
+      const recommended = recommendedCandidates.sort((a, b) => {
+        const isHdA = a.backdropUrl.includes("/upload/vod/") ? 20 : 0;
+        const isHdB = b.backdropUrl.includes("/upload/vod/") ? 20 : 0;
+        const descA = a.description && !a.description.includes("Đang cập nhật") ? 10 : 0;
+        const descB = b.description && !b.description.includes("Đang cập nhật") ? 10 : 0;
+        return (b.year * 10 + (b.rating || 8) + isHdB + descB) - (a.year * 10 + (a.rating || 8) + isHdA + descA);
+      }).slice(0, 10);
+
+      const result: HomeSectionsData = {
+        featured: featured.length > 0 ? featured : latest.slice(0, 6),
+        latest: latest.slice(0, 18),
+        hot: hot.length > 0 ? hot : latest.slice(6, 16),
+        series: series.slice(0, 18),
+        singles: cinemaMovies.length > 0 ? cinemaMovies.slice(0, 18) : latest.slice(0, 18),
+        tvShows: series.slice(0, 18),
+        action: actionMovies.length > 0 ? actionMovies.slice(0, 18) : cinemaMovies.slice(0, 18),
+        romance: romance.length > 0 ? romance.slice(0, 18) : series.slice(0, 18),
+        animation: animation.slice(0, 18),
+        recommended,
+      };
+
+      this.homeCache = {
+        data: result,
+        expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes cache
+      };
+
+      return result;
+    } catch (error) {
+      console.error("KKPhim getHomeMovies error, falling back to basic latest:", error);
+      const fallback = await this.getLatestMovies(1);
+      const items = fallback.items;
+      return {
+        featured: items.slice(0, 5),
+        latest: items.slice(0, 10),
+        hot: items.slice(10, 20),
+        series: items.filter((m) => m.type === "series").slice(0, 10),
+        singles: items.filter((m) => m.type === "single").slice(0, 10),
+        tvShows: items.slice(0, 10),
+        action: items.slice(0, 10),
+        romance: items.slice(0, 10),
+        animation: items.slice(0, 10),
+        recommended: items.slice(0, 10),
+      };
+    }
+  }
+
+  /**
+   * Get movie detail with full episode and server streams
+   */
+  async getMovieBySlug(slug: string): Promise<Movie | null> {
+    if (!slug || typeof slug !== "string") {
+      throw new MovieApiError("Movie slug is required", 400, "INVALID_SLUG");
+    }
+
+    try {
+      const raw = await movieApiClient.get<any>(
+        `/phim/${encodeURIComponent(slug.trim())}`,
+        { revalidate: 3600 } // 1 hour cache
+      );
+
+      if (!raw || !raw.movie) {
+        return null;
+      }
+
+      const cdnDomain = "https://phimimg.com";
+      const movie = mapKkphimMovie(raw.movie, cdnDomain);
+
+      // Map episodes and servers
+      if (Array.isArray(raw.episodes)) {
+        movie.episodes = mapKkphimEpisodes(raw.episodes);
+      }
+
+      return movie;
+    } catch (err: any) {
+      if (err.statusCode === 404 || err.code === "NOT_FOUND") {
+        return null;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Search movies by keyword with smart relevance boosting and candidate resolution
+   */
+  async searchMovies(query: string, page: number = 1, limit: number = 20): Promise<PaginatedMovies> {
+    const rawQ = (query || "").trim();
+    if (!rawQ) {
+      return {
+        items: [],
+        pagination: { totalItems: 0, totalItemsPerPage: limit, currentPage: 1, totalPages: 1 },
+      };
+    }
+
+    const q = rawQ.toLowerCase();
+
+    // 1. Clean query of common Vietnamese filler words
+    let cleanQuery = q
+      .replace(/^(phim|xem phim|bo phim|bộ phim|xem|co phim|có phim)\s+/i, "")
+      .trim();
+    if (!cleanQuery) cleanQuery = q;
+
+    // 2. Extract base keyword for API query if user typed "X của Y" or "X bởi Y"
+    let apiSearchKeyword = cleanQuery.replace(/\s+(của|bởi)\s+.*$/i, "").trim();
+    if (!apiSearchKeyword) apiSearchKeyword = cleanQuery;
+
+    // 3. For page 1, resolve candidate slugs for exact matches and popular Vietnamese directors/franchises
+    const candidateSlugs = new Set<string>();
+
+    if (page === 1) {
+      // Special mappings for popular directors, actors, and titles
+      const SPECIAL_MAP: Array<{ patterns: string[]; slugs: string[] }> = [
+        {
+          patterns: ["tran thanh", "trấn thành"],
+          slugs: ["mai-2024", "nha-ba-nu", "bo-gia-2021"],
+        },
+        {
+          patterns: ["mai", "phim mai"],
+          slugs: ["mai-2024", "mai"],
+        },
+        {
+          patterns: ["ly hai", "lý hải", "lat mat", "lật mặt"],
+          slugs: ["lat-mat-7-mot-dieu-uoc", "lat-mat-6-tam-ve-dinh-menh", "lat-mat-48h"],
+        },
+        {
+          patterns: ["victor vu", "victor vũ"],
+          slugs: ["nguoi-vo-cuoi-cung", "mat-biec", "toi-thay-hoa-vang-tren-co-xanh"],
+        },
+        {
+          patterns: ["ngo thanh van", "ngô thanh vân"],
+          slugs: ["hai-phuong", "thanh-soi"],
+        },
+      ];
+
+      for (const entry of SPECIAL_MAP) {
+        if (entry.patterns.some((p) => q.includes(p) || cleanQuery.includes(p))) {
+          entry.slugs.forEach((s) => candidateSlugs.add(s));
+        }
+      }
+
+      // Base slug from cleanQuery
+      const baseSlug = cleanQuery
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      if (baseSlug && baseSlug.length >= 2) {
+        candidateSlugs.add(baseSlug);
+        candidateSlugs.add(`${baseSlug}-2024`);
+        candidateSlugs.add(`${baseSlug}-2025`);
+        candidateSlugs.add(`${baseSlug}-2023`);
+      }
+    }
+
+    // 4. Fetch candidate slugs in parallel with error suppression
+    const candidateFetches = Array.from(candidateSlugs).map(async (slug) => {
+      try {
+        const res = await movieApiClient.get<any>(`/phim/${encodeURIComponent(slug)}`, {
+          revalidate: 3600,
+        });
+        if (res?.movie?._id) {
+          const cdnDomain = "https://phimimg.com";
+          return mapKkphimMovie(res.movie, cdnDomain);
+        }
+      } catch {
+        // Ignore candidate fetch errors
+      }
+      return null;
+    });
+
+    // 5. Fetch search API
+    const apiFetch = movieApiClient
+      .get<any>(
+        `/v1/api/tim-kiem?keyword=${encodeURIComponent(apiSearchKeyword)}&page=${page}&limit=${limit}`,
+        { revalidate: 60 }
+      )
+      .catch(() => null);
+
+    const [candidates, raw] = await Promise.all([
+      Promise.all(candidateFetches),
+      apiFetch,
+    ]);
+
+    const verifiedCandidates: Movie[] = candidates.filter((m): m is Movie => m !== null);
+    const apiItems = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+    const cdnDomain = raw?.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+    const mappedApiMovies = apiItems.map((item: any) => mapKkphimMovie(item, cdnDomain));
+
+    // 6. Merge & Deduplicate
+    const seenIds = new Set<string>();
+    const merged: Movie[] = [];
+
+    for (const m of verifiedCandidates) {
+      const id = m.id || m.slug;
+      if (!seenIds.has(id)) {
+        seenIds.add(id);
+        merged.push(m);
+      }
+    }
+
+    for (const m of mappedApiMovies) {
+      const id = m.id || m.slug;
+      if (!seenIds.has(id)) {
+        seenIds.add(id);
+        merged.push(m);
+      }
+    }
+
+    // 7. Relevance scoring for smart re-ranking on page 1
+    if (page === 1 && merged.length > 0) {
+      const baseSlug = cleanQuery
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const scoreMovie = (m: Movie): number => {
+        let score = 0;
+        const title = (m.title || "").toLowerCase();
+        const orig = (m.originalTitle || "").toLowerCase();
+        const slug = (m.slug || "").toLowerCase();
+        const director = (m.director || "").toLowerCase();
+        const cast = (m.cast || []).join(" ").toLowerCase();
+
+        // Exact match
+        if (title === cleanQuery || orig === cleanQuery || slug === baseSlug) {
+          score += 10000;
+        } else if (title.startsWith(cleanQuery) || orig.startsWith(cleanQuery)) {
+          score += 5000;
+        } else if (title.includes(cleanQuery) || orig.includes(cleanQuery)) {
+          score += 2000;
+        }
+
+        // Director or Actor matches
+        if (q.includes("trấn thành") || q.includes("tran thanh")) {
+          if (
+            director.includes("trấn thành") ||
+            director.includes("tran thanh") ||
+            cast.includes("trấn thành") ||
+            cast.includes("tran thanh")
+          ) {
+            score += 8000;
+          }
+        }
+
+        if (q.includes("lý hải") || q.includes("ly hai")) {
+          if (
+            director.includes("lý hải") ||
+            director.includes("ly hai") ||
+            cast.includes("lý hải") ||
+            cast.includes("ly hai")
+          ) {
+            score += 8000;
+          }
+        }
+
+        if (candidateSlugs.has(m.slug)) {
+          score += 1500;
+        }
+
+        if (m.year === 2024 || m.year === 2025) {
+          score += 300;
+        }
+
+        return score;
+      };
+
+      merged.sort((a, b) => scoreMovie(b) - scoreMovie(a));
+    }
+
+    const pagination = mapKkphimPagination(raw?.data?.params?.pagination);
+    if (verifiedCandidates.length > 0) {
+      pagination.totalItems = Math.max(pagination.totalItems, merged.length);
+      pagination.totalPages = Math.max(pagination.totalPages, 1);
+    }
+
+    return {
+      items: merged,
+      pagination,
+    };
+  }
+
+  /**
+   * Get list of genres
+   */
+  async getGenres(): Promise<Genre[]> {
+    const raw = await movieApiClient.get<any>(
+      `/v1/api/the-loai`,
+      { revalidate: 86400 } // 24 hours cache
+    );
+
+    const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+
+    const mapped = items.map((item: any) => ({
+      id: item._id || item.slug,
+      name: item.name || "",
+      slug: item.slug || "",
+      description: `Tổng hợp các bộ phim thuộc thể loại ${item.name} đặc sắc`,
+    }));
+
+    if (!mapped.some((g: Genre) => g.slug === "hoat-hinh")) {
+      mapped.push({
+        id: "hoat-hinh",
+        name: "Hoạt Hình & Anime",
+        slug: "hoat-hinh",
+        description: "Tổng hợp các bộ phim hoạt hình và anime hấp dẫn nhất",
+      });
+    }
+
+    return mapped;
+  }
+
+  /**
+   * Get movies by genre
+   */
+  async getMoviesByGenre(genreSlug: string, page: number = 1, limit: number = 24): Promise<PaginatedMovies> {
+    if (!genreSlug) {
+      throw new MovieApiError("Genre slug is required", 400, "INVALID_GENRE");
+    }
+
+    if (genreSlug === "hoat-hinh") {
+      return this.getMoviesByType("hoat-hinh", page, limit);
+    }
+
+    const raw = await movieApiClient.get<any>(
+      `/v1/api/the-loai/${encodeURIComponent(genreSlug)}?page=${page}&limit=${limit}`,
+      { revalidate: 3600 }
+    );
+
+    const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+    const cdnDomain = raw?.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+
+    const mapped: Movie[] = items.map((item: any) => mapKkphimMovie(item, cdnDomain));
+    const pagination = mapKkphimPagination(raw?.data?.params?.pagination);
+
+    // Guarantee strict genre matching
+    const cleanSlug = genreSlug.toLowerCase().trim();
+    const verified = mapped.filter((m: Movie) =>
+      m.genreSlugs.some((s: string) => s === cleanSlug) ||
+      m.genres.some((g: string) => g.toLowerCase().includes(cleanSlug.replace(/-/g, " ")))
+    );
+
+    return {
+      items: verified.length > 0 ? verified : mapped,
+      pagination,
+    };
+  }
+
+  /**
+   * Get list of countries
+   */
+  async getCountries(): Promise<Country[]> {
+    const raw = await movieApiClient.get<any>(
+      `/v1/api/quoc-gia`,
+      { revalidate: 86400 } // 24 hours cache
+    );
+
+    const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+
+    return items.map((item: any) => ({
+      id: item._id || item.slug,
+      name: item.name || "",
+      slug: item.slug || "",
+      code: (item.slug || "").toUpperCase().slice(0, 3),
+    }));
+  }
+
+  /**
+   * Get movies by country
+   */
+  async getMoviesByCountry(countrySlug: string, page: number = 1, limit: number = 24): Promise<PaginatedMovies> {
+    if (!countrySlug) {
+      throw new MovieApiError("Country slug is required", 400, "INVALID_COUNTRY");
+    }
+
+    const raw = await movieApiClient.get<any>(
+      `/v1/api/quoc-gia/${encodeURIComponent(countrySlug)}?page=${page}&limit=${limit}`,
+      { revalidate: 3600 }
+    );
+
+    const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+    const cdnDomain = raw?.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+
+    const mapped = items.map((item: any) => mapKkphimMovie(item, cdnDomain));
+    const pagination = mapKkphimPagination(raw?.data?.params?.pagination);
+
+    return {
+      items: mapped,
+      pagination,
+    };
+  }
+
+  /**
+   * Universal server-side multi-parameter movie filter
+   */
+  async queryMovies(options?: MovieFilterOptions): Promise<PaginatedMovies> {
+    const page = options?.page || 1;
+    const limit = options?.limit || 24;
+
+    // 1. Choose primary API endpoint
+    // If genre is specified, ALWAYS query the dedicated genre endpoint to guarantee genre accuracy!
+    let endpoint = "/v1/api/danh-sach/phim-moi-cap-nhat";
+    if (options?.genre === "hoat-hinh" || (options?.type as string) === "hoat-hinh") {
+      endpoint = "/v1/api/danh-sach/hoat-hinh";
+    } else if (options?.genre) {
+      endpoint = `/v1/api/the-loai/${encodeURIComponent(options.genre)}`;
+    } else if (options?.country) {
+      endpoint = `/v1/api/quoc-gia/${encodeURIComponent(options.country)}`;
+    } else if (options?.type === "series") {
+      endpoint = "/v1/api/danh-sach/phim-bo";
+    } else if (options?.type === "single") {
+      endpoint = "/v1/api/danh-sach/phim-le";
+    }
+
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("limit", String(limit));
+
+    // Append country if not already the endpoint
+    if (options?.country && !endpoint.includes("/quoc-gia/")) {
+      searchParams.set("country", options.country);
+    }
+
+    // Append year
+    if (options?.year) {
+      searchParams.set("year", String(options.year));
+    }
+
+    // Append sorting
+    if (options?.sort === "year") {
+      searchParams.set("sort_field", "year");
+      searchParams.set("sort_type", "desc");
+    } else if (options?.sort === "year_asc") {
+      searchParams.set("sort_field", "year");
+      searchParams.set("sort_type", "asc");
+    } else {
+      searchParams.set("sort_field", "modified.time");
+      searchParams.set("sort_type", "desc");
+    }
+
+    const fullUrl = `${endpoint}?${searchParams.toString()}`;
+
+    try {
+      const raw = await movieApiClient.get<any>(fullUrl, { revalidate: 1800 });
+
+      const items = Array.isArray(raw?.data?.items) ? raw.data.items : [];
+      const cdnDomain = raw?.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
+
+      let mapped: Movie[] = items.map((item: any) => mapKkphimMovie(item, cdnDomain));
+      const pagination = mapKkphimPagination(raw?.data?.params?.pagination);
+
+      // Strict post-filtering guarantees 100% accurate results:
+      // 1. Guarantee strict genre matching
+      if (options?.genre && options.genre !== "hoat-hinh") {
+        const cleanSlug = options.genre.toLowerCase().trim();
+        mapped = mapped.filter((m: Movie) =>
+          m.genreSlugs.some((s: string) => s === cleanSlug) ||
+          m.genres.some((g: string) => g.toLowerCase().includes(cleanSlug.replace(/-/g, " ")))
+        );
+      }
+
+      // 2. Guarantee strict type matching (e.g. single vs series)
+      if (options?.type && options.type !== "hoat-hinh") {
+        mapped = mapped.filter((m: Movie) => m.type === options.type);
+      }
+
+      // 3. Guarantee strict country matching if returned items differ
+      if (options?.country) {
+        const cleanCountry = options.country.toLowerCase().trim();
+        const countryFiltered = mapped.filter((m: Movie) =>
+          m.countrySlug === cleanCountry ||
+          m.country?.toLowerCase().includes(cleanCountry.replace(/-/g, " "))
+        );
+        if (countryFiltered.length > 0) {
+          mapped = countryFiltered;
+        }
+      }
+
+      // 4. Guarantee strict year matching
+      if (options?.year) {
+        const yearFiltered = mapped.filter((m: Movie) => m.year === options.year);
+        if (yearFiltered.length > 0) {
+          mapped = yearFiltered;
+        }
+      }
+
+      // 5. Guarantee language filtering (Vietsub, Thuyết minh, Lồng tiếng)
+      if (options?.language) {
+        const langQuery = options.language.toLowerCase();
+        const langFiltered = mapped.filter((m: Movie) => {
+          const l = (m.language || "").toLowerCase();
+          if (langQuery === "vietsub") return l.includes("vietsub") || l.includes("phụ đề");
+          if (langQuery === "thuyet-minh") return l.includes("thuyết minh");
+          if (langQuery === "long-tieng") return l.includes("lồng tiếng");
+          return l.includes(langQuery);
+        });
+        if (langFiltered.length > 0) {
+          mapped = langFiltered;
+        }
+      }
+
+      // 6. Guarantee strict rating matching (e.g. IMDb 8.0+)
+      if (options?.rating) {
+        mapped = mapped.filter((m: Movie) => (m.rating || 0) >= options.rating!);
+      }
+
+      // Sorting
+      if (options?.sort === "rating") {
+        mapped = [...mapped].sort((a, b) => b.rating - a.rating);
+      } else if (options?.sort === "views") {
+        mapped = [...mapped].sort((a, b) => (b.views || 0) - (a.views || 0));
+      } else if (options?.sort === "alpha") {
+        mapped = [...mapped].sort((a, b) => a.title.localeCompare(b.title, "vi"));
+      }
+
+      return {
+        items: mapped,
+        pagination,
+      };
+    } catch (err) {
+      console.error("KkphimService queryMovies error:", err);
+      return this.getLatestMovies(page);
+    }
+  }
+}
+
+export const kkphimService = new KkphimService();

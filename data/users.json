@@ -1,0 +1,99 @@
+[
+  {
+    "id": "usr_demo_rubbyfilm_001",
+    "name": "Thành Viên VIP",
+    "email": "demo@rubbyfilm.vn",
+    "passwordHash": "c0d60d693949a464f466a85d28d69a13111fdc1a6e642413c6db6df3bece7e0e469669ba65de3132140b655dda5e0abf5e8762ccf598b36de1dab13d5228a949",
+    "salt": "f9b4325622e4ce55a711215438011f9c",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces",
+    "role": "vip",
+    "identities": [
+      {
+        "id": "ident_demo_cred",
+        "userId": "usr_demo_rubbyfilm_001",
+        "provider": "credentials",
+        "providerAccountId": "demo@rubbyfilm.vn",
+        "email": "demo@rubbyfilm.vn",
+        "createdAt": 1790316985411
+      }
+    ],
+    "createdAt": 1790316985411
+  },
+  {
+    "id": "usr_f41fd65577331fc1",
+    "name": "Bao Rubby",
+    "email": "bao@rubbyfilm.vn",
+    "passwordHash": "7da2278f8407a448afc6fb1a96316cc331fc510a90b31b73e21523344ba41f90c4470522ce35232674050def7131bd1b085f8ff9bd2cc42feb9b41e94394f39e",
+    "salt": "41b135a4e2a031e8d0b1a144d2259ed1",
+    "role": "user",
+    "identities": [
+      {
+        "id": "ident_26da23102fac2bf5",
+        "userId": "usr_f41fd65577331fc1",
+        "provider": "credentials",
+        "providerAccountId": "bao@rubbyfilm.vn",
+        "email": "bao@rubbyfilm.vn",
+        "createdAt": 1790316985515
+      }
+    ],
+    "createdAt": 1790316985515
+  },
+  {
+    "id": "usr_6e6d0e05fa97a575",
+    "name": "bao duy",
+    "email": "tranduybao1005@gmail.com",
+    "avatarUrl": "https://lh3.googleusercontent.com/a/ACg8ocKUpHARXBVY_3FEGjOkIcQBZ9LmkOBhWtD-bbe0K874fyKfjw=s96-c",
+    "role": "user",
+    "identities": [
+      {
+        "id": "ident_8223af1b9f7f1385",
+        "userId": "usr_6e6d0e05fa97a575",
+        "provider": "google",
+        "providerAccountId": "100003047241528525986",
+        "email": "tranduybao1005@gmail.com",
+        "createdAt": 1790318482784,
+        "lastUsedAt": 1790320670466
+      }
+    ],
+    "createdAt": 1790318482784
+  },
+  {
+    "id": "usr_1a8c93913ce0ba80",
+    "name": "Duy Bảo",
+    "email": "1582563893610196@facebook.user.rubbyfilm.vn",
+    "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=256&h=256&fit=crop&crop=faces&q=80",
+    "role": "user",
+    "identities": [
+      {
+        "id": "ident_0b19a069f9cff1c9",
+        "userId": "usr_1a8c93913ce0ba80",
+        "provider": "facebook",
+        "providerAccountId": "1582563893610196",
+        "email": "1582563893610196@facebook.user.rubbyfilm.vn",
+        "createdAt": 1790319844242,
+        "lastUsedAt": 1790333027765
+      }
+    ],
+    "createdAt": 1790319844242
+  },
+  {
+    "id": "usr_7b83eade452d0cee",
+    "name": "Bảo",
+    "email": "baotranduy666666@gmail.com",
+    "passwordHash": "d107b80ad745508320d2e8e154b28f52f8df2c059f143fa2b49baa551228582516e85e0cc90d722912e95cd8314397de8a30ee65bbdc57c013c631259a59d5f7",
+    "salt": "a34664638f71ceab0d6cb7b13ea2c100",
+    "role": "user",
+    "identities": [
+      {
+        "id": "ident_9255ca305a1664aa",
+        "userId": "usr_7b83eade452d0cee",
+        "provider": "credentials",
+        "providerAccountId": "baotranduy666666@gmail.com",
+        "email": "baotranduy666666@gmail.com",
+        "createdAt": 1790320982605
+      }
+    ],
+    "createdAt": 1790320982605,
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=faces&q=80"
+  }
+]

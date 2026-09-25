@@ -1,0 +1,75 @@
+[
+  {
+    "token": "4be6da7a859b467d46895ba2093d80cca032fba6debfcf5cb098a081cb84db3d",
+    "user": {
+      "id": "usr_f41fd65577331fc1",
+      "name": "Bao Rubby",
+      "email": "bao@rubbyfilm.vn",
+      "role": "user",
+      "providers": [
+        "credentials"
+      ],
+      "identities": [
+        {
+          "id": "ident_26da23102fac2bf5",
+          "userId": "usr_f41fd65577331fc1",
+          "provider": "credentials",
+          "providerAccountId": "bao@rubbyfilm.vn",
+          "email": "bao@rubbyfilm.vn",
+          "createdAt": 1790316985515
+        }
+      ],
+      "createdAt": 1790316985515
+    },
+    "expiresAt": 1792908985518
+  },
+  {
+    "token": "8e4277613adebb86b87033b086aaa3475d9a8fb3d87fe3c5899c8e00b975b16f",
+    "user": {
+      "id": "usr_f41fd65577331fc1",
+      "name": "Bao Rubby",
+      "email": "bao@rubbyfilm.vn",
+      "role": "user",
+      "providers": [
+        "credentials"
+      ],
+      "identities": [
+        {
+          "id": "ident_26da23102fac2bf5",
+          "userId": "usr_f41fd65577331fc1",
+          "provider": "credentials",
+          "providerAccountId": "bao@rubbyfilm.vn",
+          "email": "bao@rubbyfilm.vn",
+          "createdAt": 1790316985515
+        }
+      ],
+      "createdAt": 1790316985515
+    },
+    "expiresAt": 1792908993136
+  },
+  {
+    "token": "0ac2ed7ad806316cbc45983de12dbae550c0f0522a57d692a47e934d595cfe06",
+    "user": {
+      "id": "usr_demo_rubbyfilm_001",
+      "name": "Thành Viên VIP",
+      "email": "demo@rubbyfilm.vn",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=faces",
+      "role": "vip",
+      "providers": [
+        "credentials"
+      ],
+      "identities": [
+        {
+          "id": "ident_demo_cred",
+          "userId": "usr_demo_rubbyfilm_001",
+          "provider": "credentials",
+          "providerAccountId": "demo@rubbyfilm.vn",
+          "email": "demo@rubbyfilm.vn",
+          "createdAt": 1790316985411
+        }
+      ],
+      "createdAt": 1790316985411
+    },
+    "expiresAt": 1792924328737
+  }
+]

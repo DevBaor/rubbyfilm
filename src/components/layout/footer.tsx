@@ -1,0 +1,309 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowUp, Sparkles, MessageCircle, Film, Shield, Zap, Heart } from "lucide-react";
+
+export function Footer() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password";
+
+  const [showFloatingScroll, setShowFloatingScroll] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowFloatingScroll(window.scrollY > 400);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleHomeClick = (e?: React.MouseEvent) => {
+    const isAtHome =
+      pathname === "/" ||
+      (typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === ""));
+    if (isAtHome) {
+      if (e) {
+        e.preventDefault();
+      }
+      scrollToTop();
+    }
+  };
+
+  if (isAuthPage) {
+    return null;
+  }
+
+  return (
+    <footer className="relative bg-[#0A0A0A] border-t border-[#1F1F1F] text-cinema-400 text-xs select-none overflow-hidden">
+      {/* Radiant Top Glow Accent Line */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#E50000]/60 to-transparent" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-12 bg-[#E50000]/10 blur-2xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+        {/* Top Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 mb-14">
+
+          {/* Col 1: Brand Info & Social Connect (4 cols on lg) */}
+          <div className="lg:col-span-4 space-y-5">
+            {/* Logo */}
+            <Link
+              href="/"
+              onClick={handleHomeClick}
+              className="inline-flex items-baseline select-none group transition-opacity hover:opacity-90"
+              title="Về đầu trang"
+            >
+              <span className="font-extrabold text-2xl sm:text-3xl tracking-[-0.02em] text-[#F9FAFB]">
+                RUBBY
+              </span>
+              <span className="font-extrabold text-sm sm:text-base tracking-wider text-[#E50000] ml-1 uppercase">
+                FILM
+              </span>
+            </Link>
+
+            <p className="text-[#D1D5DB] text-xs sm:text-sm font-normal leading-[1.6] max-w-sm">
+              RubbyFilm là nền tảng xem phim trực tuyến hiện đại, đem lại trải nghiệm điện ảnh chuẩn 4K HDR cùng tốc độ tải mượt mà, giao diện tinh tế trên mọi thiết bị hoàn toàn miễn phí.
+            </p>
+
+            {/* Quality Badges */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141414] border border-[#262626] text-[11px] font-semibold text-[#D1D5DB]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Tốc Độ Cao
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141414] border border-[#262626] text-[11px] font-semibold text-amber-400">
+                Chuẩn 4K HDR
+              </span>
+            </div>
+
+            {/* Social Media Connect Buttons */}
+            <div className="pt-2">
+              <div className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-2.5">
+                Kênh Mạng Xã Hội
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Facebook */}
+                <a
+                  href="https://www.facebook.com/duybao105/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  title="Facebook cá nhân Duy Bảo"
+                  aria-label="Facebook"
+                >
+                  <svg className="w-4 h-4 fill-current transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+
+                {/* Instagram */}
+                <a
+                  href="https://www.instagram.com/yud_oabie/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#E1306C] hover:text-[#E1306C] hover:bg-[#E1306C]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  title="Instagram cá nhân yud_oabie"
+                  aria-label="Instagram"
+                >
+                  <svg className="w-4 h-4 fill-none stroke-current stroke-2 transition-transform group-hover:scale-110" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                  </svg>
+                </a>
+
+                {/* Telegram */}
+                <a
+                  href="https://t.me/Duy_Bao105"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#229ED9] hover:text-[#229ED9] hover:bg-[#229ED9]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  title="Telegram hỗ trợ @Duy_Bao105"
+                  aria-label="Telegram"
+                >
+                  <svg className="w-4 h-4 fill-current transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Col 2: Navigation Links (2 cols on lg) */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
+              Khám Phá
+            </h4>
+            <ul className="space-y-2.5">
+              <li>
+                <Link
+                  href="/"
+                  onClick={handleHomeClick}
+                  className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors flex items-center gap-1.5"
+                >
+                  <span>Trang Chủ</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/movies?type=single" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Phim Lẻ Chiếu Rạp
+                </Link>
+              </li>
+              <li>
+                <Link href="/series" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Phim Bộ Đặc Sắc
+                </Link>
+              </li>
+              <li>
+                <Link href="/trending" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors flex items-center gap-1.5">
+                  <span>Thịnh Hành</span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#E50000]/20 text-[#E50000]">HOT</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/latest" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Mới Cập Nhật
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 3: Popular Genres (2 cols on lg) */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
+              Thể Loại Hot
+            </h4>
+            <ul className="space-y-2.5">
+              <li>
+                <Link href="/genre/hanh-dong" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Hành Động
+                </Link>
+              </li>
+              <li>
+                <Link href="/genre/vien-tuong" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Khoa Học Viễn Tưởng
+                </Link>
+              </li>
+              <li>
+                <Link href="/genre/hoat-hinh" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Hoạt Hình & Anime
+                </Link>
+              </li>
+              <li>
+                <Link href="/genre/tinh-cam" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Tình Cảm Lãng Mạn
+                </Link>
+              </li>
+              <li>
+                <Link href="/genre/kinh-di" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
+                  Kinh Dị Kịch Tính
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 4: Countries & Support Box (4 cols on lg) */}
+          <div className="lg:col-span-4 space-y-5">
+            <div>
+              <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
+                Quốc Gia Tuyển Chọn
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: "Hàn Quốc", slug: "han-quoc" },
+                  { name: "Trung Quốc", slug: "trung-quoc" },
+                  { name: "Âu Mỹ", slug: "au-my" },
+                  { name: "Nhật Bản", slug: "nhat-ban" },
+                  { name: "Thái Lan", slug: "thai-lan" },
+                ].map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/country/${c.slug}`}
+                    className="px-2.5 py-1 rounded-lg bg-[#141414] border border-[#242424] hover:border-[#E50000] text-[#D1D5DB] hover:text-[#F9FAFB] transition-colors text-xs font-medium"
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* 24/7 Telegram Direct Support Card */}
+            <a
+              href="https://t.me/Duy_Bao105"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-4 rounded-2xl bg-gradient-to-r from-[#141414] to-[#1A1A1A] border border-[#262626] hover:border-[#229ED9]/60 hover:shadow-[0_10px_25px_rgba(34,158,217,0.15)] transition-all duration-300 group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-[#229ED9]/20 text-[#229ED9] flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-[#F9FAFB] group-hover:text-[#229ED9] transition-colors">
+                    Hỗ Trực Tuyến 24/7
+                  </span>
+                </div>
+                <span className="text-[10px] font-semibold text-[#9CA3AF] group-hover:text-[#F9FAFB] transition-colors">
+                  @Duy_Bao105 ›
+                </span>
+              </div>
+              <p className="text-[11px] text-[#D1D5DB] font-normal leading-[1.6]">
+                Gặp lỗi phát phim, yêu cầu thêm phim mới hoặc đóng góp ý kiến? Hãy nhắn tin trực tiếp qua Telegram.
+              </p>
+            </a>
+          </div>
+
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-[#1C1C1C] flex flex-col md:flex-row items-center justify-between gap-4 text-cinema-500">
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+            <span>© {new Date().getFullYear()} <strong className="text-cinema-300 font-semibold">RubbyFilm</strong>.</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Nền tảng giải trí phim ảnh trực tuyến miễn phí chất lượng cao.</span>
+          </div>
+
+          <div className="flex items-center gap-5">
+            <Link href="/my-list" className="hover:text-white transition-colors">
+              Yêu Thích
+            </Link>
+            <Link href="/history" className="hover:text-white transition-colors">
+              Lịch Sử Xem
+            </Link>
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] border border-[#262626] hover:border-white/30 text-cinema-300 hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm"
+              title="Cuộn lên đầu trang"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+              <span>Đầu trang</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Quick Scroll-to-Top Button */}
+      {showFloatingScroll && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-11 h-11 rounded-full bg-[#141414]/90 hover:bg-[#E50000] border border-[#2E2E2E] hover:border-[#E50000] text-cinema-300 hover:text-white shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer group"
+          title="Cuộn lên đầu trang"
+          aria-label="Cuộn lên đầu trang"
+        >
+          <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+        </button>
+      )}
+    </footer>
+  );
+}
