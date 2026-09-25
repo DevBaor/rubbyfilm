@@ -25,6 +25,7 @@ import {
   Check,
   SlidersHorizontal,
   Scan,
+  Smartphone,
 } from "lucide-react";
 import Hls from "hls.js";
 import { VideoSource } from "@/types/movie";
@@ -95,6 +96,33 @@ export function VideoPlayer({
   const [hasError, setHasError] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
   const [autoNextCountdown, setAutoNextCountdown] = React.useState<number | null>(null);
+  const [isCssLandscape, setIsCssLandscape] = React.useState(false);
+
+  // Sync fullscreen state & auto unlock screen orientation
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement
+      );
+      setIsFullscreen(isFull);
+      if (!isFull) {
+        setIsCssLandscape(false);
+        if (typeof screen !== "undefined" && screen.orientation && typeof screen.orientation.unlock === "function") {
+          try {
+            screen.orientation.unlock();
+          } catch {}
+        }
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const cycleVideoFit = () => {
     setVideoFit((prev) => {
@@ -434,14 +462,140 @@ export function VideoPlayer({
     }
   };
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
+  const toggleRotateLandscape = async () => {
+    const video = videoRef.current;
+    const container = containerRef.current;
+    if (!container) return;
+
+    // 1. If currently in CSS landscape rotation mode, exit it
+    if (isCssLandscape) {
+      setIsCssLandscape(false);
+      if (document.fullscreenElement) {
+        try {
+          await document.exitFullscreen();
+        } catch {}
+      }
+      if (typeof screen !== "undefined" && screen.orientation && typeof screen.orientation.unlock === "function") {
+        try {
+          screen.orientation.unlock();
+        } catch {}
+      }
+      return;
+    }
+
+    // 2. iOS Safari (iPhone): trigger native landscape theater player
+    const isIOS =
+      typeof navigator !== "undefined" &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+    if (isIOS && video && (video as any).webkitEnterFullscreen) {
+      try {
+        (video as any).webkitEnterFullscreen();
+        return;
+      } catch (err) {
+        console.warn("iOS webkitEnterFullscreen failed", err);
+      }
+    }
+
+    // 3. Android Chrome / modern mobile browsers: request fullscreen and lock orientation
+    try {
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          await container.requestFullscreen();
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      }
+
+      if (typeof screen !== "undefined" && screen.orientation && typeof (screen.orientation as any).lock === "function") {
+        try {
+          await (screen.orientation as any).lock("landscape");
+          return;
+        } catch {
+          try {
+            await (screen.orientation as any).lock("landscape-primary");
+            return;
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.warn("Fullscreen/orientation lock error", err);
+    }
+
+    // 4. Fallback: CSS pseudo-landscape rotation so it immediately rotates 90 degrees and fills screen!
+    setIsCssLandscape(true);
+  };
+
+  const toggleFullscreen = async () => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    const isCurrentlyFull = !!(
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement
+    );
+
+    if (!isCurrentlyFull) {
+      const isIOS =
+        typeof navigator !== "undefined" &&
+        (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+      if (isIOS && video && (video as any).webkitEnterFullscreen) {
+        try {
+          (video as any).webkitEnterFullscreen();
+          return;
+        } catch (e) {
+          console.warn("webkitEnterFullscreen fallback to container", e);
+        }
+      }
+
+      try {
+        if (container.requestFullscreen) {
+          await container.requestFullscreen();
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen();
+        }
+        setIsFullscreen(true);
+
+        // Auto-lock to landscape on mobile screens
+        if (
+          typeof window !== "undefined" &&
+          (window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+        ) {
+          if (typeof screen !== "undefined" && screen.orientation && typeof (screen.orientation as any).lock === "function") {
+            try {
+              await (screen.orientation as any).lock("landscape");
+            } catch {
+              try {
+                await (screen.orientation as any).lock("landscape-primary");
+              } catch {}
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Fullscreen error", err);
+      }
     } else {
-      document.exitFullscreen().catch(() => {});
-      setIsFullscreen(false);
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        }
+        setIsFullscreen(false);
+        setIsCssLandscape(false);
+        if (typeof screen !== "undefined" && screen.orientation && typeof screen.orientation.unlock === "function") {
+          try {
+            screen.orientation.unlock();
+          } catch {}
+        }
+      } catch (err) {
+        console.warn("Exit fullscreen error", err);
+      }
     }
   };
 
@@ -631,8 +785,19 @@ export function VideoPlayer({
           </span>
         </div>
 
-        {onSwitchServer && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+          {/* Mobile Landscape Rotate Button for Embed */}
+          <button
+            type="button"
+            onClick={toggleRotateLandscape}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cinema-950/80 hover:bg-[#E50000] border border-cinema-700 text-xs font-semibold text-white shadow-lg backdrop-blur-md transition-all active:scale-95"
+            title="Xoay ngang màn hình"
+          >
+            <Smartphone className="w-3.5 h-3.5 rotate-90" />
+            <span className="hidden sm:inline">Xoay ngang</span>
+          </button>
+
+          {onSwitchServer && (
             <Button
               variant="secondary"
               size="sm"
@@ -642,8 +807,8 @@ export function VideoPlayer({
               <Server className="w-3.5 h-3.5 text-brand" />
               <span>Đổi Server</span>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
@@ -657,7 +822,9 @@ export function VideoPlayer({
       onClick={resetControlsTimeout}
       className={cn(
         "relative w-full max-w-full bg-black overflow-hidden shadow-2xl select-none group border border-cinema-700/80 transition-all duration-300",
-        isCinemaMode
+        isCssLandscape
+          ? "!fixed !inset-0 !z-[9999] !w-[100dvh] !h-[100dvw] !max-w-none !rounded-none rotate-90 origin-top-left translate-x-[100dvw]"
+          : isCinemaMode
           ? "h-[65vh] sm:h-[78vh] lg:h-[86vh] max-h-[940px] rounded-none sm:rounded-2xl"
           : "aspect-video rounded-2xl"
       )}
@@ -837,6 +1004,16 @@ export function VideoPlayer({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {/* Quick Rotate to Landscape Button */}
+            <button
+              type="button"
+              onClick={toggleRotateLandscape}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 hover:bg-[#E50000] border border-white/20 hover:border-[#E50000] text-xs font-semibold text-white backdrop-blur-md shadow-lg transition-all active:scale-95"
+              title="Xoay ngang màn hình (Landscape)"
+            >
+              <Smartphone className="w-3.5 h-3.5 rotate-90" />
+              <span className="hidden sm:inline">Xoay ngang</span>
+            </button>
             <span className="text-[11px] font-semibold bg-brand/20 text-brand border border-brand/30 px-2.5 py-0.5 rounded backdrop-blur-md">
               {source.serverName || source.label}
             </span>
@@ -1265,6 +1442,17 @@ export function VideoPlayer({
                   </div>
                 )}
               </div>
+
+              {/* Rotate to Landscape Button on mobile & tablet */}
+              <button
+                type="button"
+                onClick={toggleRotateLandscape}
+                aria-label="Xoay ngang màn hình"
+                className="text-cinema-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 group/rot"
+                title="Xoay ngang màn hình (Landscape)"
+              >
+                <Smartphone className="w-5 h-5 group-hover/rot:rotate-90 transition-transform duration-300" />
+              </button>
 
               {/* Fullscreen Button */}
               <button
