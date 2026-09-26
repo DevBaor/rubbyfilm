@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUp, Sparkles, MessageCircle, Film, Shield, Zap, Heart } from "lucide-react";
+import { ArrowUp, MessageCircle, ChevronRight, ShieldCheck, Zap, Sparkles } from "lucide-react";
 
 export function Footer() {
   const router = useRouter();
@@ -49,12 +49,12 @@ export function Footer() {
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#E50000]/60 to-transparent" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-12 bg-[#E50000]/10 blur-2xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-8 sm:pb-12">
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 mb-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 mb-10 sm:mb-14">
 
           {/* Col 1: Brand Info & Social Connect (4 cols on lg) */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 space-y-4 sm:space-y-5">
             {/* Logo */}
             <Link
               href="/"
@@ -70,12 +70,12 @@ export function Footer() {
               </span>
             </Link>
 
-            <p className="text-[#D1D5DB] text-xs sm:text-sm font-normal leading-[1.6] max-w-sm">
+            <p className="text-[#9CA3AF] text-xs sm:text-sm font-normal leading-relaxed max-w-sm">
               RubbyFilm là nền tảng xem phim trực tuyến hiện đại, đem lại trải nghiệm điện ảnh chuẩn 4K HDR cùng tốc độ tải mượt mà, giao diện tinh tế trên mọi thiết bị hoàn toàn miễn phí.
             </p>
 
             {/* Quality Badges */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141414] border border-[#262626] text-[11px] font-semibold text-[#D1D5DB]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Tốc Độ Cao
@@ -83,20 +83,23 @@ export function Footer() {
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141414] border border-[#262626] text-[11px] font-semibold text-amber-400">
                 Chuẩn 4K HDR
               </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141414] border border-[#262626] text-[11px] font-semibold text-rose-400">
+                Miễn Phí 100%
+              </span>
             </div>
 
             {/* Social Media Connect Buttons */}
-            <div className="pt-2">
-              <div className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-2.5">
+            <div className="pt-1">
+              <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-2.5">
                 Kênh Mạng Xã Hội
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 {/* Facebook */}
                 <a
                   href="https://www.facebook.com/duybao105/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm group"
                   title="Facebook cá nhân Duy Bảo"
                   aria-label="Facebook"
                 >
@@ -110,7 +113,7 @@ export function Footer() {
                   href="https://www.instagram.com/yud_oabie/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#E1306C] hover:text-[#E1306C] hover:bg-[#E1306C]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#E1306C] hover:text-[#E1306C] hover:bg-[#E1306C]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm group"
                   title="Instagram cá nhân yud_oabie"
                   aria-label="Instagram"
                 >
@@ -126,7 +129,7 @@ export function Footer() {
                   href="https://t.me/Duy_Bao105"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#229ED9] hover:text-[#229ED9] hover:bg-[#229ED9]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm group"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#141414] border border-[#262626] hover:border-[#229ED9] hover:text-[#229ED9] hover:bg-[#229ED9]/10 text-cinema-300 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm group"
                   title="Telegram hỗ trợ @Duy_Bao105"
                   aria-label="Telegram"
                 >
@@ -138,86 +141,89 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Navigation Links (2 cols on lg) */}
-          <div className="lg:col-span-2">
-            <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
-              Khám Phá
-            </h4>
-            <ul className="space-y-2.5">
-              <li>
-                <Link
-                  href="/"
-                  onClick={handleHomeClick}
-                  className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors flex items-center gap-1.5"
-                >
-                  <span>Trang Chủ</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/movies?type=single" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Phim Lẻ Chiếu Rạp
-                </Link>
-              </li>
-              <li>
-                <Link href="/series" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Phim Bộ Đặc Sắc
-                </Link>
-              </li>
-              <li>
-                <Link href="/trending" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors flex items-center gap-1.5">
-                  <span>Thịnh Hành</span>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#E50000]/20 text-[#E50000]">HOT</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/latest" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Mới Cập Nhật
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Col 2 & 3: Navigation Links & Genres (Parallel 2 columns on mobile) */}
+          <div className="lg:col-span-4 grid grid-cols-2 gap-4 sm:gap-6">
+            {/* Navigation Links */}
+            <div>
+              <h4 className="text-xs font-bold text-white tracking-wider uppercase mb-3 sm:mb-4 pb-1.5 border-b border-[#222]">
+                Khám Phá
+              </h4>
+              <ul className="space-y-2 text-xs">
+                <li>
+                  <Link
+                    href="/"
+                    onClick={handleHomeClick}
+                    className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5"
+                  >
+                    Trang Chủ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/movies?type=single" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Phim Lẻ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/series" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Phim Bộ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/trending" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-flex items-center gap-1.5 py-0.5">
+                    <span>Thịnh Hành</span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#E50000]/20 text-[#E50000]">HOT</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/latest" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Mới Cập Nhật
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Col 3: Popular Genres (2 cols on lg) */}
-          <div className="lg:col-span-2">
-            <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
-              Thể Loại Hot
-            </h4>
-            <ul className="space-y-2.5">
-              <li>
-                <Link href="/genre/hanh-dong" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Hành Động
-                </Link>
-              </li>
-              <li>
-                <Link href="/genre/vien-tuong" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Khoa Học Viễn Tưởng
-                </Link>
-              </li>
-              <li>
-                <Link href="/genre/hoat-hinh" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Hoạt Hình & Anime
-                </Link>
-              </li>
-              <li>
-                <Link href="/genre/tinh-cam" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Tình Cảm Lãng Mạn
-                </Link>
-              </li>
-              <li>
-                <Link href="/genre/kinh-di" className="text-[#D1D5DB] hover:text-[#F9FAFB] font-medium transition-colors">
-                  Kinh Dị Kịch Tính
-                </Link>
-              </li>
-            </ul>
+            {/* Popular Genres */}
+            <div>
+              <h4 className="text-xs font-bold text-white tracking-wider uppercase mb-3 sm:mb-4 pb-1.5 border-b border-[#222]">
+                Thể Loại Hot
+              </h4>
+              <ul className="space-y-2 text-xs">
+                <li>
+                  <Link href="/genre/hanh-dong" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Hành Động
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/genre/vien-tuong" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Viễn Tưởng
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/genre/hoat-hinh" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Hoạt Hình & Anime
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/genre/tinh-cam" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Tình Cảm
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/genre/kinh-di" className="text-[#9CA3AF] hover:text-white font-medium transition-colors inline-block py-0.5">
+                    Kinh Dị
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Col 4: Countries & Support Box (4 cols on lg) */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 space-y-4 sm:space-y-5">
             <div>
-              <h4 className="text-xs font-extrabold text-[#F9FAFB] tracking-[-0.02em] uppercase mb-4 pb-2 border-b border-[#222]">
+              <h4 className="text-xs font-bold text-white tracking-wider uppercase mb-3 sm:mb-4 pb-1.5 border-b border-[#222]">
                 Quốc Gia Tuyển Chọn
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {[
                   { name: "Hàn Quốc", slug: "han-quoc" },
                   { name: "Trung Quốc", slug: "trung-quoc" },
@@ -228,7 +234,7 @@ export function Footer() {
                   <Link
                     key={c.slug}
                     href={`/country/${c.slug}`}
-                    className="px-2.5 py-1 rounded-lg bg-[#141414] border border-[#242424] hover:border-[#E50000] text-[#D1D5DB] hover:text-[#F9FAFB] transition-colors text-xs font-medium"
+                    className="px-2.5 py-1 rounded-lg bg-[#141414] border border-[#242424] hover:border-[#E50000] text-[#D1D5DB] hover:text-white transition-colors text-xs font-medium active:scale-95"
                   >
                     {c.name}
                   </Link>
@@ -241,22 +247,22 @@ export function Footer() {
               href="https://t.me/Duy_Bao105"
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-4 rounded-2xl bg-gradient-to-r from-[#141414] to-[#1A1A1A] border border-[#262626] hover:border-[#229ED9]/60 hover:shadow-[0_10px_25px_rgba(34,158,217,0.15)] transition-all duration-300 group"
+              className="block p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#141414] via-[#161616] to-[#121212] border border-[#262626] hover:border-[#229ED9]/60 hover:shadow-[0_10px_25px_rgba(34,158,217,0.15)] transition-all duration-300 group active:scale-[0.99]"
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-[#229ED9]/20 text-[#229ED9] flex items-center justify-center">
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-[#F9FAFB] group-hover:text-[#229ED9] transition-colors">
-                    Hỗ Trực Tuyến 24/7
+                    Hỗ Trợ Trực Tuyến 24/7
                   </span>
                 </div>
                 <span className="text-[10px] font-semibold text-[#9CA3AF] group-hover:text-[#F9FAFB] transition-colors">
                   @Duy_Bao105 ›
                 </span>
               </div>
-              <p className="text-[11px] text-[#D1D5DB] font-normal leading-[1.6]">
+              <p className="text-[11px] text-[#9CA3AF] font-normal leading-relaxed">
                 Gặp lỗi phát phim, yêu cầu thêm phim mới hoặc đóng góp ý kiến? Hãy nhắn tin trực tiếp qua Telegram.
               </p>
             </a>
@@ -265,24 +271,26 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-[#1C1C1C] flex flex-col md:flex-row items-center justify-between gap-4 text-cinema-500">
-          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-            <span>© {new Date().getFullYear()} <strong className="text-cinema-300 font-semibold">RubbyFilm</strong>.</span>
+        <div className="pt-6 sm:pt-8 border-t border-[#1C1C1C] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#71717A]">
+          <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 text-center sm:text-left">
+            <span>© {new Date().getFullYear()} <strong className="text-[#E5E7EB] font-semibold">RubbyFilm</strong>.</span>
             <span className="hidden sm:inline">•</span>
-            <span>Nền tảng giải trí phim ảnh trực tuyến miễn phí chất lượng cao.</span>
+            <span>Nền tảng giải trí phim ảnh trực tuyến miễn phí.</span>
           </div>
 
-          <div className="flex items-center gap-5">
-            <Link href="/my-list" className="hover:text-white transition-colors">
+          <div className="flex items-center justify-center gap-4 sm:gap-5 w-full sm:w-auto">
+            <Link href="/my-list" className="hover:text-white transition-colors text-xs text-[#9CA3AF]">
               Yêu Thích
             </Link>
-            <Link href="/history" className="hover:text-white transition-colors">
+            <span className="w-1 h-1 rounded-full bg-[#333]" />
+            <Link href="/history" className="hover:text-white transition-colors text-xs text-[#9CA3AF]">
               Lịch Sử Xem
             </Link>
+            <span className="w-1 h-1 rounded-full bg-[#333]" />
             <button
               type="button"
               onClick={scrollToTop}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] border border-[#262626] hover:border-white/30 text-cinema-300 hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] border border-[#262626] hover:border-white/30 text-[#D1D5DB] hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm"
               title="Cuộn lên đầu trang"
             >
               <ArrowUp className="w-3.5 h-3.5" />
