@@ -3,24 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Calendar,
-  Sparkles,
-  Flame,
-  Film,
-  Award,
-  Clock,
-  History,
-  ChevronRight,
-  ArrowRight,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronRight, ArrowRight } from "lucide-react";
 
 interface YearCardItem {
   year: number | string;
   href: string;
   tag: string;
-  tagIcon: LucideIcon;
   title: string;
   subtitle: string;
   highlight?: boolean;
@@ -37,7 +25,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: 2026,
     href: "/year/2026",
     tag: "SIÊU HOT 2026",
-    tagIcon: Sparkles,
     title: "Điện Ảnh 2026",
     subtitle: "Khởi chiếu rạp mới nhất",
     highlight: true,
@@ -52,7 +39,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: 2025,
     href: "/year/2025",
     tag: "BOM TẤN",
-    tagIcon: Flame,
     title: "Điện Ảnh 2025",
     subtitle: "Cơn sốt phòng vé toàn cầu",
     gradient: "linear-gradient(135deg, rgba(234, 88, 12, 0.4) 0%, rgba(20, 10, 8, 0.96) 80%)",
@@ -66,7 +52,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: 2024,
     href: "/year/2024",
     tag: "ĐẶC SẮC",
-    tagIcon: Award,
     title: "Điện Ảnh 2024",
     subtitle: "Những tác phẩm đột phá",
     gradient: "linear-gradient(135deg, rgba(147, 51, 234, 0.4) 0%, rgba(18, 10, 24, 0.96) 80%)",
@@ -80,7 +65,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: 2023,
     href: "/year/2023",
     tag: "TUYỂN CHỌN",
-    tagIcon: Film,
     title: "Điện Ảnh 2023",
     subtitle: "Tác phẩm ghi dấu ấn",
     gradient: "linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(10, 14, 26, 0.96) 80%)",
@@ -94,7 +78,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: 2022,
     href: "/year/2022",
     tag: "ĂN KHÁCH",
-    tagIcon: Clock,
     title: "Điện Ảnh 2022",
     subtitle: "Kịch tính & giàu cảm xúc",
     gradient: "linear-gradient(135deg, rgba(13, 148, 136, 0.4) 0%, rgba(8, 20, 18, 0.96) 80%)",
@@ -108,7 +91,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     year: "kinh-dien",
     href: "/movies?sort=year_asc&type=single",
     tag: "KINH ĐIỂN",
-    tagIcon: History,
     title: "Phim Kinh Điển",
     subtitle: "Những kiệt tác bất hủ",
     gradient: "linear-gradient(135deg, rgba(202, 138, 4, 0.4) 0%, rgba(24, 18, 8, 0.96) 80%)",
@@ -143,8 +125,7 @@ export function YearDiscovery() {
         {/* Section Header */}
         <div className="flex items-end justify-between mb-5 sm:mb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1A1A1A] border border-[#2E2E2E] text-xs font-semibold text-[#FECF59] mb-2 shadow-sm">
-              <Calendar className="w-3.5 h-3.5 text-[#E50000]" />
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#1A1A1A] border border-[#2E2E2E] text-xs font-semibold text-[#FECF59] mb-2 shadow-sm">
               <span>Dòng Thời Gian Điện Ảnh</span>
             </div>
             <h2 className="text-xl sm:text-2xl lg:text-[26px] font-black text-white tracking-tight">
@@ -166,76 +147,70 @@ export function YearDiscovery() {
 
         {/* Featured Year Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {FEATURED_YEARS.map((item) => {
-            const TagIcon = item.tagIcon;
-
-            return (
-              <Link
-                key={String(item.year)}
-                href={item.href}
-                className="group relative overflow-hidden rounded-2xl p-4 sm:p-4.5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[155px] bg-[#0F0F0F]"
-                style={{
-                  borderColor: item.borderColor,
-                }}
-              >
-                {/* Background Image & Ambient Gradient Overlay */}
-                {item.bgImage ? (
-                  <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                    <Image
-                      src={item.bgImage}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                      className="object-cover opacity-35 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500 ease-out"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
-                    <div
-                      className="absolute inset-0 opacity-80"
-                      style={{
-                        background: item.gradient,
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="absolute inset-0 z-0 pointer-events-none"
-                    style={{ background: item.gradient }}
+          {FEATURED_YEARS.map((item) => (
+            <Link
+              key={String(item.year)}
+              href={item.href}
+              className="group relative overflow-hidden rounded-2xl p-4 sm:p-4.5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[155px] bg-[#0F0F0F]"
+              style={{
+                borderColor: item.borderColor,
+              }}
+            >
+              {/* Background Image & Ambient Gradient Overlay */}
+              {item.bgImage ? (
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                  <Image
+                    src={item.bgImage}
+                    alt={item.title}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                    className="object-cover opacity-35 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500 ease-out"
                   />
-                )}
-
-
-                {/* Ambient Glow Orb */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
+                  <div
+                    className="absolute inset-0 opacity-80"
+                    style={{
+                      background: item.gradient,
+                    }}
+                  />
+                </div>
+              ) : (
                 <div
-                  className="absolute -top-10 -left-10 z-[1] w-24 h-24 rounded-full blur-2xl opacity-40 group-hover:opacity-75 transition-opacity pointer-events-none"
-                  style={{ background: item.glowColor }}
+                  className="absolute inset-0 z-0 pointer-events-none"
+                  style={{ background: item.gradient }}
                 />
+              )}
 
-                {/* Top Badge */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tagColorClass}`}
-                  >
-                    <TagIcon className="w-2.5 h-2.5" />
-                    <span>{item.tag}</span>
-                  </span>
+              {/* Ambient Glow Orb */}
+              <div
+                className="absolute -top-10 -left-10 z-[1] w-24 h-24 rounded-full blur-2xl opacity-40 group-hover:opacity-75 transition-opacity pointer-events-none"
+                style={{ background: item.glowColor }}
+              />
 
-                  <div className="w-6 h-6 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
-                    <ArrowRight className="w-3 h-3 text-white group-hover:translate-x-0.5 transition-transform" />
-                  </div>
+              {/* Top Badge */}
+              <div className="relative z-10 flex items-center justify-between">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${item.tagColorClass}`}
+                >
+                  {item.tag}
+                </span>
+
+                <div className="w-6 h-6 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                  <ArrowRight className="w-3 h-3 text-white group-hover:translate-x-0.5 transition-transform" />
                 </div>
+              </div>
 
-                {/* Bottom Content */}
-                <div className="relative z-10 mt-4">
-                  <h3 className="text-base sm:text-lg font-black text-white group-hover:text-[#FECF59] transition-colors leading-tight">
-                    {item.title}
-                  </h3>
-                  <p className="text-[11px] text-[#D1D5DB]/80 mt-1 line-clamp-1">
-                    {item.subtitle}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
+              {/* Bottom Content */}
+              <div className="relative z-10 mt-4">
+                <h3 className="text-base sm:text-lg font-black text-white group-hover:text-[#FECF59] transition-colors leading-tight">
+                  {item.title}
+                </h3>
+                <p className="text-[11px] text-[#D1D5DB]/80 mt-1 line-clamp-1">
+                  {item.subtitle}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {/* Quick Year Pill Filter Bar */}
