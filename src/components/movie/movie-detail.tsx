@@ -132,28 +132,28 @@ export function MovieDetail({ movie, relatedMovies }: MovieDetailProps) {
     : "Xem Phim Ngay";
 
   return (
-    <div className="min-h-screen bg-cinema-900 pb-20">
-      {/* Backdrop Header with deep gradient vignettes */}
-      <div className="relative w-full h-[60vh] min-h-[460px] max-h-[640px] overflow-hidden bg-cinema-950">
+    <div className="min-h-screen bg-cinema-900 pb-20 relative">
+      {/* Backdrop Header with deep gradient vignettes as absolute background layer */}
+      <div className="absolute top-0 left-0 right-0 h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden bg-cinema-950 pointer-events-none z-0">
         <Image
           src={backdropSrc}
           alt={movie.title}
           fill
           priority
-          className="object-cover object-top opacity-40 scale-105 filter blur-[0.5px]"
+          className="object-cover object-top opacity-35 sm:opacity-40 scale-105 filter blur-[0.5px]"
           sizes="100vw"
           onError={() => setBackdropSrc(FALLBACK_BACKDROP)}
         />
         {/* Cinematic Multi-directional Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-cinema-900 via-cinema-900/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-cinema-900 via-cinema-900/70 to-transparent w-full lg:w-3/4" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cinema-900 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-cinema-900 to-transparent" />
       </div>
 
-      {/* Main Info Section (Overlapping Backdrop) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-52 sm:-mt-64 relative z-10">
+      {/* Main Info Section - positioned cleanly right below the fixed header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 relative z-10">
         {/* Interactive Breadcrumbs with Back Button */}
-        <div className="flex items-center gap-1.5 text-xs text-cinema-400 mb-5 overflow-x-auto whitespace-nowrap py-1 no-scrollbar">
+        <div className="flex items-center gap-1.5 text-xs text-cinema-400 mb-4 sm:mb-5 overflow-x-auto whitespace-nowrap py-1 no-scrollbar">
           <button
             type="button"
             onClick={() => router.back()}

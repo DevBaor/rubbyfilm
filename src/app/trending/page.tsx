@@ -68,7 +68,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
   };
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div className="pt-20 sm:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       {/* Page Title & Breadcrumb */}
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F9FAFB] tracking-[-0.02em]">

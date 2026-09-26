@@ -74,7 +74,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="pt-24 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div className="pt-20 sm:pt-24 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       {/* Header */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-cinema-750">
         <div>

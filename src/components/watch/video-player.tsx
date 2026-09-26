@@ -56,6 +56,23 @@ interface VideoPlayerProps {
   isCinemaMode?: boolean;
   onToggleCinemaMode?: () => void;
 }
+interface WebkitHTMLVideoElement extends HTMLVideoElement {
+  webkitEnterFullscreen?: () => void;
+}
+
+interface WebkitHTMLElement extends HTMLElement {
+  webkitRequestFullscreen?: () => Promise<void>;
+}
+
+interface WebkitDocument extends Document {
+  webkitFullscreenElement?: Element;
+  webkitExitFullscreen?: () => Promise<void>;
+}
+
+interface ScreenOrientationWithLock extends ScreenOrientation {
+  lock?: (orientation: "landscape" | "landscape-primary" | "portrait" | "natural") => Promise<void>;
+}
+
 
 export function VideoPlayer({
   source,
@@ -101,10 +118,8 @@ export function VideoPlayer({
   // Sync fullscreen state & auto unlock screen orientation
   React.useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFull = !!(
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement
-      );
+      const webkitDoc = document as WebkitDocument;
+      const isFull = !!(document.fullscreenElement || webkitDoc.webkitFullscreenElement);
       setIsFullscreen(isFull);
       if (!isFull) {
         setIsCssLandscape(false);
@@ -489,9 +504,10 @@ export function VideoPlayer({
       (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
 
-    if (isIOS && video && (video as any).webkitEnterFullscreen) {
+    const iosVideo = video as WebkitHTMLVideoElement | null;
+    if (isIOS && iosVideo && iosVideo.webkitEnterFullscreen) {
       try {
-        (video as any).webkitEnterFullscreen();
+        iosVideo.webkitEnterFullscreen();
         return;
       } catch (err) {
         console.warn("iOS webkitEnterFullscreen failed", err);
@@ -503,19 +519,20 @@ export function VideoPlayer({
       if (!document.fullscreenElement) {
         if (container.requestFullscreen) {
           await container.requestFullscreen();
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen();
+        } else if ((container as WebkitHTMLElement).webkitRequestFullscreen) {
+          await (container as WebkitHTMLElement).webkitRequestFullscreen!();
         }
         setIsFullscreen(true);
       }
 
-      if (typeof screen !== "undefined" && screen.orientation && typeof (screen.orientation as any).lock === "function") {
+      const screenOrientation = typeof screen !== "undefined" ? (screen.orientation as ScreenOrientationWithLock | undefined) : undefined;
+      if (screenOrientation && typeof screenOrientation.lock === "function") {
         try {
-          await (screen.orientation as any).lock("landscape");
+          await screenOrientation.lock("landscape");
           return;
         } catch {
           try {
-            await (screen.orientation as any).lock("landscape-primary");
+            await screenOrientation.lock("landscape-primary");
             return;
           } catch {}
         }
@@ -533,20 +550,27 @@ export function VideoPlayer({
     const video = videoRef.current;
     if (!container) return;
 
+    const webkitDoc = document as WebkitDocument;
     const isCurrentlyFull = !!(
       document.fullscreenElement ||
-      (document as any).webkitFullscreenElement
+      webkitDoc.webkitFullscreenElement ||
+      isCssLandscape
     );
 
     if (!isCurrentlyFull) {
+      const isMobile =
+        typeof window !== "undefined" &&
+        (window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+
       const isIOS =
         typeof navigator !== "undefined" &&
         (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
           (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
 
-      if (isIOS && video && (video as any).webkitEnterFullscreen) {
+      const iosVideo = video as WebkitHTMLVideoElement | null;
+      if (isIOS && iosVideo && iosVideo.webkitEnterFullscreen) {
         try {
-          (video as any).webkitEnterFullscreen();
+          iosVideo.webkitEnterFullscreen();
           return;
         } catch (e) {
           console.warn("webkitEnterFullscreen fallback to container", e);
@@ -556,38 +580,46 @@ export function VideoPlayer({
       try {
         if (container.requestFullscreen) {
           await container.requestFullscreen();
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen();
+        } else if ((container as WebkitHTMLElement).webkitRequestFullscreen) {
+          await (container as WebkitHTMLElement).webkitRequestFullscreen!();
         }
         setIsFullscreen(true);
-
-        // Auto-lock to landscape on mobile screens
-        if (
-          typeof window !== "undefined" &&
-          (window.innerWidth < 1024 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
-        ) {
-          if (typeof screen !== "undefined" && screen.orientation && typeof (screen.orientation as any).lock === "function") {
-            try {
-              await (screen.orientation as any).lock("landscape");
-            } catch {
-              try {
-                await (screen.orientation as any).lock("landscape-primary");
-              } catch {}
-            }
-          }
-        }
       } catch (err) {
         console.warn("Fullscreen error", err);
       }
-    } else {
-      try {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
+
+      // Auto-lock to landscape on mobile screens or fallback to CSS rotation
+      let lockedLandscape = false;
+      if (isMobile) {
+        const screenOrientation = typeof screen !== "undefined" ? (screen.orientation as ScreenOrientationWithLock | undefined) : undefined;
+        if (screenOrientation && typeof screenOrientation.lock === "function") {
+          try {
+            await screenOrientation.lock("landscape");
+            lockedLandscape = true;
+          } catch {
+            try {
+              await screenOrientation.lock("landscape-primary");
+              lockedLandscape = true;
+            } catch {}
+          }
         }
-        setIsFullscreen(false);
-        setIsCssLandscape(false);
+
+        // If orientation lock API failed/unsupported (e.g. iOS Safari) and currently in portrait, rotate via CSS!
+        if (!lockedLandscape && window.innerHeight > window.innerWidth) {
+          setIsCssLandscape(true);
+        }
+      }
+    } else {
+      setIsFullscreen(false);
+      setIsCssLandscape(false);
+      try {
+        if (document.fullscreenElement || webkitDoc.webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (webkitDoc.webkitExitFullscreen) {
+            await webkitDoc.webkitExitFullscreen();
+          }
+        }
         if (typeof screen !== "undefined" && screen.orientation && typeof screen.orientation.unlock === "function") {
           try {
             screen.orientation.unlock();
@@ -1154,7 +1186,7 @@ export function VideoPlayer({
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
                   aria-label="Âm lượng"
-                  className="w-14 sm:w-20 h-1 rounded bg-cinema-700 appearance-none cursor-pointer accent-brand"
+                  className="w-14 sm:w-20 h-1 rounded bg-cinema-700 appearance-none cursor-pointer accent-brand hidden sm:block"
                 />
               </div>
 
@@ -1405,26 +1437,19 @@ export function VideoPlayer({
                 )}
               </div>
 
-              {/* Rotate to Landscape Button on mobile & tablet */}
-              <button
-                type="button"
-                onClick={toggleRotateLandscape}
-                aria-label="Xoay ngang màn hình"
-                className="text-cinema-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 group/rot"
-                title="Xoay ngang màn hình (Landscape)"
-              >
-                <Smartphone className="w-5 h-5 group-hover/rot:rotate-90 transition-transform duration-300" />
-              </button>
-
-              {/* Fullscreen Button */}
+              {/* Fullscreen & Rotate Button - Placed right next to Settings Gear */}
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                aria-label={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
-                className="text-cinema-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
-                title="Toàn màn hình (Phím F)"
+                aria-label={isFullscreen || isCssLandscape ? "Thoát toàn màn hình" : "Toàn màn hình & Tự động xoay ngang"}
+                className="text-cinema-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 shrink-0"
+                title="Toàn màn hình & Tự động xoay ngang (Phím F)"
               >
-                {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                {isFullscreen || isCssLandscape ? (
+                  <Minimize className="w-5 h-5" />
+                ) : (
+                  <Maximize className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>

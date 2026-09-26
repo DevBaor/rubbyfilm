@@ -199,7 +199,7 @@ function ProfileContent() {
   }, [history]);
 
   return (
-    <div className="min-h-screen pt-24 sm:pt-28 pb-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full select-none">
+    <div className="min-h-screen pt-20 sm:pt-24 pb-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full select-none">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#141414] border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-semibold shadow-[0_10px_30px_rgba(16,185,129,0.3)] animate-in fade-in slide-in-from-bottom-4 duration-300">

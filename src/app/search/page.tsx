@@ -16,7 +16,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="pt-20 sm:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Skeleton className="h-10 w-64 mx-auto mb-4" />
           <Skeleton className="h-12 w-full max-w-xl mx-auto rounded-xl" />
         </div>

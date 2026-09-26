@@ -122,7 +122,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
   };
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div className="pt-20 sm:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-xs text-cinema-400 mb-4">
         <Link href="/" className="hover:text-white transition-colors">

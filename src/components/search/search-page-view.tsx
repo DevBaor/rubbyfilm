@@ -257,7 +257,7 @@ export function SearchPageView() {
   }, [results, typeFilter, sortOption]);
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[80vh]">
+    <div className="pt-20 sm:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-h-[80vh]">
       {/* Top Search Header */}
       <div className="max-w-2xl mx-auto mb-10 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
