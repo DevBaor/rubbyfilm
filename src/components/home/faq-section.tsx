@@ -63,18 +63,10 @@ const faqs: FaqItem[] = [
 ];
 
 export function FaqSection() {
-  const [openIds, setOpenIds] = React.useState<Set<string>>(new Set(["faq-1"]));
+  const [openId, setOpenId] = React.useState<string | null>("faq-1");
 
   const toggleFaq = (id: string) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    setOpenId((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -105,7 +97,7 @@ export function FaqSection() {
         {/* 2-Column FAQ Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {faqs.map((faq) => {
-            const isOpen = openIds.has(faq.id);
+            const isOpen = openId === faq.id;
 
             return (
               <div
