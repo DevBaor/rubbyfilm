@@ -775,6 +775,8 @@ export class KkphimService {
       endpoint = "/v1/api/danh-sach/phim-bo";
     } else if (options?.type === "single") {
       endpoint = "/v1/api/danh-sach/phim-le";
+    } else if (options?.type === "chieu-rap" || (options?.type as string) === "phim-chieu-rap") {
+      endpoint = "/v1/api/danh-sach/phim-chieu-rap";
     } else if (options?.genre) {
       endpoint = `/v1/api/the-loai/${encodeURIComponent(options.genre)}`;
     } else if (options?.country) {

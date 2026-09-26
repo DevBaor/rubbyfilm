@@ -70,7 +70,7 @@ export interface MovieFilterOptions {
   genre?: string;
   country?: string;
   year?: number;
-  type?: MovieType | "hoat-hinh";
+  type?: MovieType | "hoat-hinh" | "chieu-rap";
   sort?: "latest" | "rating" | "views" | "year" | "year_asc" | "alpha";
   rating?: number;
   quality?: string;
