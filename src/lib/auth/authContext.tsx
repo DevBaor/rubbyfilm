@@ -4,6 +4,7 @@ import * as React from "react";
 import { AuthUser, LoginInput, RegisterInput } from "./authTypes";
 
 import { AuthModal } from "@/components/auth/auth-modal";
+import { LogoutConfirmModal } from "@/components/auth/logout-confirm-modal";
 import { watchHistoryService } from "@/lib/services/watchHistoryService";
 import { myListService } from "@/lib/services/myListService";
 import { searchHistoryService } from "@/lib/services/searchHistoryService";
@@ -24,6 +25,10 @@ interface AuthContextValue {
   openAuthModal: (mode?: "login" | "register" | "forgot") => void;
   closeAuthModal: () => void;
   setAuthModalMode: (mode: "login" | "register" | "forgot") => void;
+  isLogoutConfirmOpen: boolean;
+  openLogoutConfirm: () => void;
+  closeLogoutConfirm: () => void;
+  confirmLogout: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
@@ -49,7 +54,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
   const [authModalMode, setAuthModalMode] = React.useState<"login" | "register" | "forgot">("login");
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = React.useState(false);
 
+  const openLogoutConfirm = React.useCallback(() => {
+    setIsLogoutConfirmOpen(true);
+  }, []);
+
+  const closeLogoutConfirm = React.useCallback(() => {
+    setIsLogoutConfirmOpen(false);
+  }, []);
   const openAuthModal = React.useCallback((mode: "login" | "register" | "forgot" = "login") => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
@@ -284,7 +297,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     searchHistoryService.setUser(userId);
   }, [user]);
 
-  const logout = async () => {
+  const logout = React.useCallback(async () => {
+    setIsLogoutConfirmOpen(true);
+  }, []);
+
+  const confirmLogout = React.useCallback(async () => {
+    setIsLogoutConfirmOpen(false);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } catch {}
@@ -296,9 +314,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     watchHistoryService.setUser(null);
     myListService.setUser(null);
     searchHistoryService.setUser(null);
-    toast.info("Đã đăng xuất", "Bạn đã đăng xuất tài khoản thành công. Hẹn gặp lại bạn!");
-  };
-
+    toast.success("Đăng xuất thành công", "Hẹn gặp lại bạn sớm tại RubbyFilm!");
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+  }, [toast]);
   const updateProfile = React.useCallback(
     async (updates: { name?: string; avatarUrl?: string }) => {
       // 1. Instantly update local React state & cached user for immediate UI reflection
@@ -356,6 +376,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     unlinkProvider,
     logout,
+    confirmLogout,
+    isLogoutConfirmOpen,
+    openLogoutConfirm,
+    closeLogoutConfirm,
     refresh: fetchSession,
     updateProfile,
     isAuthModalOpen,
@@ -369,6 +393,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={value}>
       {children}
       <AuthModal />
+      <LogoutConfirmModal />
     </AuthContext.Provider>
   );
 }

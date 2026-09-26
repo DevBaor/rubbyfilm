@@ -1181,44 +1181,6 @@ export function VideoPlayer({
                 </button>
               )}
 
-              {/* Cinema Mode Toggle */}
-              {onToggleCinemaMode && (
-                <button
-                  type="button"
-                  onClick={onToggleCinemaMode}
-                  aria-label={isCinemaMode ? "Thoát chế độ rạp phim" : "Chế độ rạp phim"}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isCinemaMode
-                      ? "text-brand bg-brand/10 hover:bg-brand/20 font-bold"
-                      : "text-cinema-300 hover:text-white hover:bg-white/10"
-                  }`}
-                  title={isCinemaMode ? "Thoát chế độ rạp phim" : "Chế độ rạp phim (Tự động mở rộng & Căn giữa màn hình)"}
-                >
-                  <Tv className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Screen Fit / Auto Zoom Toggle */}
-              <button
-                type="button"
-                onClick={cycleVideoFit}
-                aria-label="Căn chỉnh khung hình"
-                className={`p-2 rounded-lg transition-colors ${
-                  videoFit !== "contain"
-                    ? "text-brand bg-brand/10 hover:bg-brand/20 font-bold"
-                    : "text-cinema-300 hover:text-white hover:bg-white/10"
-                }`}
-                title={
-                  videoFit === "contain"
-                    ? "Tỷ lệ: Khớp chuẩn 16:9 (Bấm để Phóng to cắt viền đen)"
-                    : videoFit === "cover"
-                    ? "Tỷ lệ: Phóng to cắt viền đen (Bấm để Kéo giãn full)"
-                    : "Tỷ lệ: Kéo giãn toàn khung (Bấm về Khớp chuẩn)"
-                }
-              >
-                <Scan className="w-4 h-4" />
-              </button>
-
               {/* Settings Gear ⚙ */}
               <div className="relative">
                 <button
