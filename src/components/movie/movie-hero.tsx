@@ -152,8 +152,11 @@ export function MovieHero({ movies }: MovieHeroProps) {
                     alt={m.title || "Phim nổi bật"}
                     fill
                     priority={idx === 0}
-                    className="object-cover object-top filter contrast-[1.05] brightness-[0.92]"
+                    className="object-cover object-top filter contrast-[1.05] brightness-[0.92] transform-gpu"
                     sizes="(max-width: 640px) 100vw, 1px"
+                    style={{
+                      imageRendering: "-webkit-optimize-contrast",
+                    }}
                   />
                 )}
               </div>
@@ -166,8 +169,11 @@ export function MovieHero({ movies }: MovieHeroProps) {
                     alt={m.title || "Phim nổi bật"}
                     fill
                     priority={idx === 0}
-                    className="object-cover object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02]"
+                    className="object-cover object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02] transform-gpu"
                     sizes="100vw"
+                    style={{
+                      imageRendering: "-webkit-optimize-contrast",
+                    }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = FALLBACK_BACKDROP;
