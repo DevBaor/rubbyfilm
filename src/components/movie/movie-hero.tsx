@@ -11,7 +11,7 @@ import {
 import { Movie } from "@/types/movie";
 import { useMyList } from "@/lib/hooks/use-my-list";
 import { formatRating } from "@/lib/utils";
-import { FALLBACK_BACKDROP } from "@/lib/utils/image";
+import { FALLBACK_BACKDROP, FALLBACK_POSTER } from "@/lib/utils/image";
 import { cn } from "@/lib/utils";
 import { getBilingualTitles } from "@/lib/utils/title";
 import { generateMovieSynopsis } from "@/lib/utils/synopsis";
@@ -107,7 +107,7 @@ export function MovieHero({ movies }: MovieHeroProps) {
   return (
     <section
       aria-label="Phim đề cử đặc sắc"
-      className="relative w-full h-[65vh] min-h-[480px] max-h-[560px] sm:h-[75vh] sm:min-h-[580px] sm:max-h-[700px] lg:h-[88vh] lg:min-h-[660px] lg:max-h-[920px] overflow-hidden bg-[#0F0F0F] select-none group/hero"
+      className="relative w-full h-[62vh] min-h-[460px] max-h-[540px] sm:h-[75vh] sm:min-h-[580px] sm:max-h-[700px] lg:h-[88vh] lg:min-h-[660px] lg:max-h-[920px] overflow-hidden bg-[#0F0F0F] select-none group/hero"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -128,7 +128,7 @@ export function MovieHero({ movies }: MovieHeroProps) {
                 : "opacity-0 z-10 pointer-events-none"
             )}
           >
-            {/* Layer 1: Backdrop Image with 1800ms Pan & Dolly Zoom */}
+            {/* Layer 1: Mobile-optimized Vertical Key Art + Ambient Glow & Desktop 16:9 Backdrop */}
             <div
               className={cn(
                 "absolute inset-0 bg-[#0F0F0F] transition-transform duration-[1800ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]",
@@ -137,19 +137,44 @@ export function MovieHero({ movies }: MovieHeroProps) {
                   : "translate-x-[4%] scale-[1.04]"
               )}
             >
-              <Image
-                src={m.backdropUrl || FALLBACK_BACKDROP}
-                alt={m.title || "Phim nổi bật"}
-                fill
-                priority={idx <= 1}
-                unoptimized
-                className="object-cover object-[center_28%] sm:object-[center_32%] md:object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02]"
-                sizes="100vw"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = FALLBACK_BACKDROP;
-                }}
-              />
+              {/* Mobile View: High-res Vertical Key Art with Ambient Glow (Prevents 2.4x stretching and pixelation) */}
+              <div className="sm:hidden absolute inset-0">
+                {/* Layer A: Ambient backdrop glow */}
+                <Image
+                  src={m.backdropUrl || m.posterUrl || FALLBACK_BACKDROP}
+                  alt=""
+                  fill
+                  unoptimized
+                  className="object-cover blur-2xl opacity-40 scale-125"
+                />
+                {/* Layer B: Crisp vertical poster art, natural portrait aspect ratio */}
+                <Image
+                  src={m.posterUrl || m.backdropUrl || FALLBACK_POSTER}
+                  alt={m.title || "Phim nổi bật"}
+                  fill
+                  priority={idx <= 1}
+                  unoptimized
+                  className="object-cover object-top filter contrast-[1.05] brightness-[0.92]"
+                  sizes="(max-width: 640px) 100vw, 1px"
+                />
+              </div>
+
+              {/* Desktop & Tablet: 16:9 Cinematic Landscape Backdrop */}
+              <div className="hidden sm:block absolute inset-0">
+                <Image
+                  src={m.backdropUrl || FALLBACK_BACKDROP}
+                  alt={m.title || "Phim nổi bật"}
+                  fill
+                  priority={idx <= 1}
+                  unoptimized
+                  className="object-cover object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02]"
+                  sizes="100vw"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = FALLBACK_BACKDROP;
+                  }}
+                />
+              </div>
             </div>
 
             {/* Layer 2: TopHim Signature Film-Grain Texture Dot Grid */}
@@ -166,8 +191,8 @@ export function MovieHero({ movies }: MovieHeroProps) {
             <div className="absolute top-0 left-0 right-0 h-36 sm:h-48 bg-gradient-to-b from-[#0F0F0F] via-[#0F0F0F]/50 to-transparent pointer-events-none z-10" />
 
             {/* Layer 4: Text Contrast Vignette */}
-            {/* Mobile bottom fade */}
-            <div className="sm:hidden absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/80 via-45% to-transparent pointer-events-none z-10" />
+            {/* Mobile bottom fade with deep cinematic gradient */}
+            <div className="sm:hidden absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/85 via-50% to-[#0F0F0F]/30 pointer-events-none z-10" />
 
             {/* Desktop 3-direction cinematic gradient lighting */}
             <div

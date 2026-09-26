@@ -12,6 +12,118 @@ import {
 } from "@/lib/models/movie";
 import { HomeSectionsData, MovieFilterOptions } from "@/types/movie";
 
+export interface SearchCategoryIntent {
+  type?: string;
+  genre?: string;
+  country?: string;
+  remainingKeyword?: string;
+  isCategoryOnly: boolean;
+  categoryLabel?: string;
+}
+
+export function parseSearchIntent(rawQuery: string): SearchCategoryIntent {
+  const q = (rawQuery || "").trim().toLowerCase();
+
+  // Normalize diacritics
+  const norm = q
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .trim();
+
+  let detectedType: string | undefined;
+  let categoryLabel: string | undefined;
+  let cleaned = norm;
+
+  // 1. Detect Type/List (Cinema, Singles, Series, Anime, TV Shows)
+  if (/\b(chieu rap|phim rap|rap chieu)\b/i.test(norm) || norm === "rap") {
+    detectedType = "phim-chieu-rap";
+    categoryLabel = "Phim Chiếu Rạp";
+    cleaned = cleaned.replace(/\b(phim\s+)?(chieu\s*rap|phim\s*rap|rap)\b/gi, "").trim();
+  } else if (/\b(phim le)\b/i.test(norm) || (/\ble\b/i.test(norm) && !/\b(ly hai|le hai)\b/i.test(norm))) {
+    detectedType = "phim-le";
+    categoryLabel = "Phim Lẻ";
+    cleaned = cleaned.replace(/\b(phim\s+)?le\b/gi, "").trim();
+  } else if (/\b(phim bo)\b/i.test(norm) || (/\bbo\b/i.test(norm) && !/\b(bo gia)\b/i.test(norm))) {
+    detectedType = "phim-bo";
+    categoryLabel = "Phim Bộ";
+    cleaned = cleaned.replace(/\b(phim\s+)?bo\b/gi, "").trim();
+  } else if (/\b(hoat hinh|anime)\b/i.test(norm)) {
+    detectedType = "hoat-hinh";
+    categoryLabel = "Hoạt Hình & Anime";
+    cleaned = cleaned.replace(/\b(phim\s+)?(hoat\s*hinh|anime)\b/gi, "").trim();
+  } else if (/\b(tv shows?|truyen hinh|gameshow)\b/i.test(norm)) {
+    detectedType = "tv-shows";
+    categoryLabel = "Chương Trình TV";
+    cleaned = cleaned.replace(/\b(phim\s+)?(tv\s*shows?|truyen\s*hinh|gameshow)\b/gi, "").trim();
+  }
+
+  // 2. Detect Genre
+  let detectedGenre: string | undefined;
+  const GENRE_RULES: Array<{ slug: string; name: string; regex: RegExp }> = [
+    { slug: "hanh-dong", name: "Hành Động", regex: /\b(hanh dong|action)\b/i },
+    { slug: "kinh-di", name: "Kinh Dị", regex: /\b(kinh di|horror|phim ma|ma)\b/i },
+    { slug: "tinh-cam", name: "Tình Cảm", regex: /\b(tinh cam|lang man|romance)\b/i },
+    { slug: "hai-huoc", name: "Hài Hước", regex: /\b(hai huoc|hai|comedy)\b/i },
+    { slug: "khoa-hoc-vien-tuong", name: "Khoa Học Viễn Tưởng", regex: /\b(khoa hoc vien tuong|vien tuong|sci-?fi)\b/i },
+    { slug: "co-trang", name: "Cổ Trang", regex: /\b(co trang)\b/i },
+    { slug: "vo-thuat", name: "Võ Thuật", regex: /\b(vo thuat|kungfu|kiem hiep)\b/i },
+    { slug: "tam-ly", name: "Tâm Lý", regex: /\b(tam ly|drama)\b/i },
+    { slug: "phieu-luu", name: "Phiêu Lưu", regex: /\b(phieu luu|adventure)\b/i },
+    { slug: "hinh-su", name: "Hình Sự", regex: /\b(hinh su|toi pham|trinh tham|crime)\b/i },
+    { slug: "chien-tranh", name: "Chiến Tranh", regex: /\b(chien tranh|war)\b/i },
+    { slug: "than-thoai", name: "Thần Thoại", regex: /\b(than thoai|huyen huyen|fantasy)\b/i },
+    { slug: "hoc-duong", name: "Học Đường", regex: /\b(hoc duong|thanh xuan)\b/i },
+    { slug: "gia-dinh", name: "Gia Đình", regex: /\b(gia dinh|family)\b/i },
+  ];
+
+  for (const g of GENRE_RULES) {
+    if (g.regex.test(cleaned) || g.regex.test(norm)) {
+      detectedGenre = g.slug;
+      if (!categoryLabel) categoryLabel = `Phim ${g.name}`;
+      cleaned = cleaned.replace(g.regex, "").trim();
+      break;
+    }
+  }
+
+  // 3. Detect Country
+  let detectedCountry: string | undefined;
+  const COUNTRY_RULES: Array<{ slug: string; name: string; regex: RegExp }> = [
+    { slug: "han-quoc", name: "Hàn Quốc", regex: /\b(han quoc|kdrama|k-drama|korea)\b/i },
+    { slug: "trung-quoc", name: "Trung Quốc", regex: /\b(trung quoc|china)\b/i },
+    { slug: "au-my", name: "Âu Mỹ", regex: /\b(au my|hollywood|phim my|us|uk)\b/i },
+    { slug: "nhat-ban", name: "Nhật Bản", regex: /\b(nhat ban|japan)\b/i },
+    { slug: "thai-lan", name: "Thái Lan", regex: /\b(thai lan|thailand)\b/i },
+    { slug: "viet-nam", name: "Việt Nam", regex: /\b(viet nam|vietnam)\b/i },
+  ];
+
+  for (const c of COUNTRY_RULES) {
+    if (c.regex.test(cleaned) || c.regex.test(norm)) {
+      detectedCountry = c.slug;
+      if (!categoryLabel) categoryLabel = `Phim ${c.name}`;
+      cleaned = cleaned.replace(c.regex, "").trim();
+      break;
+    }
+  }
+
+  // Strip generic search fillers
+  cleaned = cleaned.replace(/\b(phim|xem|hay|moi|nhat|hot|top|danh sach)\b/gi, "").trim();
+
+  const isCategoryOnly = Boolean(
+    (detectedType || detectedGenre || detectedCountry) && cleaned.length < 2
+  );
+
+  return {
+    type: detectedType,
+    genre: detectedGenre,
+    country: detectedCountry,
+    remainingKeyword: cleaned.length >= 2 ? cleaned : undefined,
+    isCategoryOnly,
+    categoryLabel,
+  };
+}
+
 export class KkphimService {
   private homeCache: { data: HomeSectionsData; expiresAt: number } | null = null;
 
@@ -324,6 +436,22 @@ export class KkphimService {
       };
     }
 
+    // 0. Smart Category / List / Genre Intent Recognition (e.g. "phim chiếu rạp", "phim lẻ", "phim kinh dị", "phim hàn quốc")
+    const intent = parseSearchIntent(rawQ);
+
+    // If query is pure category intent (e.g. "phim chiếu rạp", "chiếu rạp", "phim lẻ", "phim hàn quốc")
+    if (intent.isCategoryOnly) {
+      if (intent.genre) {
+        return this.getMoviesByGenre(intent.genre, page, limit);
+      }
+      if (intent.country) {
+        return this.getMoviesByCountry(intent.country, page, limit);
+      }
+      if (intent.type) {
+        return this.getMoviesByType(intent.type, page, limit);
+      }
+    }
+
     const q = rawQ.toLowerCase();
 
     // 1. Clean query of common Vietnamese filler words
@@ -331,6 +459,11 @@ export class KkphimService {
       .replace(/^(phim|xem phim|bo phim|bộ phim|xem|co phim|có phim)\s+/i, "")
       .trim();
     if (!cleanQuery) cleanQuery = q;
+
+    // If intent has remaining keyword (e.g. "phim chiếu rạp mai" -> "mai")
+    if (intent.remainingKeyword) {
+      cleanQuery = intent.remainingKeyword;
+    }
 
     // 2. Extract base keyword for API query if user typed "X của Y" or "X bởi Y"
     let apiSearchKeyword = cleanQuery.replace(/\s+(của|bởi)\s+.*$/i, "").trim();

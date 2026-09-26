@@ -14,7 +14,7 @@ export async function getTmdbBackdropUrl(
   tmdbId?: string | number | null,
   type: "movie" | "tv" = "movie"
 ): Promise<string | null> {
-  const apiKey = process.env.TMDB_API_KEY;
+  const apiKey = process.env.TMDB_API_KEY || "8d1cb1491ebac0d7292095e5c5bcecd0";
   if (!apiKey || !tmdbId) return null;
 
   const idStr = String(tmdbId);
@@ -78,7 +78,7 @@ export async function getTmdbLogoUrl(
   tmdbId?: string | number | null,
   type: "movie" | "tv" = "movie"
 ): Promise<string | null> {
-  const apiKey = process.env.TMDB_API_KEY;
+  const apiKey = process.env.TMDB_API_KEY || "8d1cb1491ebac0d7292095e5c5bcecd0";
   if (!apiKey || !tmdbId) return null;
 
   const idStr = String(tmdbId);

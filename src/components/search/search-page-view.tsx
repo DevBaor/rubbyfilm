@@ -24,13 +24,17 @@ import { useDebounce } from "@/lib/hooks/use-debounce";
 import { useSearchHistory } from "@/lib/hooks/use-search-history";
 
 const POPULAR_TAGS = [
+  "Phim Chiếu Rạp",
+  "Phim Lẻ",
+  "Phim Bộ",
+  "Hoạt Hình",
+  "Phim Hàn Quốc",
   "Mai",
-  "Christopher Nolan",
   "Trấn Thành",
   "Lý Hải",
+  "Christopher Nolan",
   "Dune",
   "Oppenheimer",
-  "Arcane",
   "Châu Tinh Trì",
 ];
 

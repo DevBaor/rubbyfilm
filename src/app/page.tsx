@@ -120,8 +120,9 @@ export default async function HomePage() {
     spotlightMovies.push(homeData.featured[0]);
   }
 
-  // Auto-upgrade to TMDB 4K / Original backdrops if TMDB_API_KEY is configured
-  if (process.env.TMDB_API_KEY) {
+  // Auto-upgrade to TMDB 4K / Original backdrops and logos
+  const hasTmdb = Boolean(process.env.TMDB_API_KEY || true);
+  if (hasTmdb) {
     await Promise.all([
       ...heroMovies.map(async (m) => {
         if (m.tmdbId) {
