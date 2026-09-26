@@ -6,7 +6,6 @@ import { ContinueWatchingRow } from "@/components/movie/continue-watching-row";
 import { TrendingSection } from "@/components/home/trending-section";
 import { EditorialSpotlight } from "@/components/home/editorial-spotlight";
 import { YearDiscovery } from "@/components/home/year-discovery";
-import { DevicesSection } from "@/components/home/devices-section";
 import { FaqSection } from "@/components/home/faq-section";
 import { StreamCta } from "@/components/home/stream-cta";
 import { AuthSyncBanner } from "@/components/home/auth-sync-banner";
@@ -241,9 +240,6 @@ export default async function HomePage() {
           viewAllHref="/genre/hanh-dong"
         />
       )}
-
-      {/* 12. Multi-Device Experience */}
-      <DevicesSection />
 
       {/* 13. Frequently Asked Questions (FAQ) */}
       <FaqSection />
