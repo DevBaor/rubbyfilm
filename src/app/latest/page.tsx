@@ -54,18 +54,6 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
         </p>
       </div>
 
-      {/* Results Count */}
-      <div className="flex items-center justify-between mb-4 px-1">
-        <span className="text-xs text-cinema-400">
-          Tìm thấy <strong className="text-white">{result.total.toLocaleString()}</strong> phim mới cập nhật
-          {result.totalPages > 1 && (
-            <span className="text-cinema-500 ml-1.5">
-              (Trang {result.page} / {result.totalPages.toLocaleString()})
-            </span>
-          )}
-        </span>
-      </div>
-
       {/* Grid or Empty */}
       {result.items.length > 0 ? (
         <MovieGrid movies={result.items} />

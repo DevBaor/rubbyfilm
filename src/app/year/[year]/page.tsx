@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
 import { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, ChevronRight, Sparkles, Film } from "lucide-react";
+import { Calendar, ChevronRight, Sparkles } from "lucide-react";
 
 interface YearPageProps {
   params: Promise<{ year: string }>;
@@ -111,14 +111,6 @@ export default async function YearPage({
               </p>
             </div>
 
-            {/* Total Results Counter */}
-            <div className="flex items-center gap-2 bg-[#181818] border border-[#2B2B2B] px-3.5 py-2 rounded-xl text-xs shrink-0 self-start md:self-auto">
-              <Film className="w-4 h-4 text-[#FECF59]" />
-              <span className="text-[#A3A3A3]">Tổng số:</span>
-              <span className="font-extrabold text-white">
-                {result.total > 0 ? `${result.total} bộ phim` : "Đang cập nhật"}
-              </span>
-            </div>
           </div>
 
           {/* Year Switcher Pills */}
