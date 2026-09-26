@@ -17,6 +17,13 @@ export async function POST(request: NextRequest) {
     path: "/",
     maxAge: 0,
   });
+  response.cookies.set("rubbyfilm_user_hint", "", {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 
   return response;
 }

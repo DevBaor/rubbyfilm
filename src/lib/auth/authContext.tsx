@@ -28,6 +28,21 @@ interface AuthContextValue {
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
+function getUserFromHint(): AuthUser | null {
+  if (typeof document === "undefined") return null;
+  try {
+    const match = document.cookie.match(new RegExp("(^|;\\s*)rubbyfilm_user_hint=([^;]+)"));
+    if (match && match[2]) {
+      const decodedStr = Buffer.from(match[2], "base64url").toString("utf-8");
+      const decoded = JSON.parse(decodedStr);
+      if (decoded && decoded.id && decoded.name) {
+        return decoded as AuthUser;
+      }
+    }
+  } catch {}
+  return null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const toast = useToast();
   const [user, setUser] = React.useState<AuthUser | null>(null);
@@ -46,7 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchSession = React.useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      const res = await fetch(`/api/auth/me?_t=${Date.now()}`, {
+        cache: "no-store",
+        credentials: "include",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data?.authenticated && json.data?.user) {
@@ -55,16 +77,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("rubbyfilm_cached_user", JSON.stringify(json.data.user));
           } catch {}
         } else {
+          // Only clear user if no hint cookie is active
+          const hint = getUserFromHint();
+          if (!hint) {
+            setUser(null);
+            try {
+              localStorage.removeItem("rubbyfilm_cached_user");
+            } catch {}
+          }
+        }
+      } else {
+        const hint = getUserFromHint();
+        if (!hint) {
           setUser(null);
           try {
             localStorage.removeItem("rubbyfilm_cached_user");
           } catch {}
         }
-      } else {
-        setUser(null);
-        try {
-          localStorage.removeItem("rubbyfilm_cached_user");
-        } catch {}
       }
     } catch (e) {
       console.warn("Failed to check auth session:", e);
@@ -74,12 +103,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    try {
-      const cached = localStorage.getItem("rubbyfilm_cached_user");
-      if (cached) {
-        setUser(JSON.parse(cached));
-      }
-    } catch {}
+    // 1. Try reading client user hint cookie first for immediate flash-free display
+    const hint = getUserFromHint();
+    if (hint) {
+      setUser(hint);
+    } else {
+      try {
+        const cached = localStorage.getItem("rubbyfilm_cached_user");
+        if (cached) {
+          setUser(JSON.parse(cached));
+        }
+      } catch {}
+    }
     fetchSession();
   }, [fetchSession]);
 
@@ -105,6 +140,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : authSuccess === "facebook"
             ? "Facebook"
             : "tài khoản mạng xã hội";
+
+        // Read immediately from cookie hint if available
+        const hint = getUserFromHint();
+        if (hint) {
+          setUser(hint);
+          try {
+            localStorage.setItem("rubbyfilm_cached_user", JSON.stringify(hint));
+          } catch {}
+        }
+
         fetchSession();
         toast.success("Đăng nhập thành công!", `Chào mừng bạn đã đăng nhập qua ${providerName}.`);
         url.searchParams.delete("auth_success");
@@ -246,6 +291,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     try {
       localStorage.removeItem("rubbyfilm_cached_user");
+      document.cookie = "rubbyfilm_user_hint=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     } catch {}
     watchHistoryService.setUser(null);
     myListService.setUser(null);

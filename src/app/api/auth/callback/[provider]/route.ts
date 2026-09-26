@@ -201,6 +201,25 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
+    const userHint = Buffer.from(
+      JSON.stringify({
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        avatarUrl: authUser.avatarUrl,
+        role: authUser.role,
+        providers: authUser.providers,
+      })
+    ).toString("base64url");
+
+    response.cookies.set("rubbyfilm_user_hint", userHint, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production" && !isLocal,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+    });
+
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
     return response;
   } catch (error: any) {
