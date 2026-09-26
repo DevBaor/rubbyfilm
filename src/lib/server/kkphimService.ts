@@ -767,32 +767,38 @@ export class KkphimService {
     const page = options?.page || 1;
     const limit = options?.limit || 24;
 
-    // 1. Choose primary API endpoint
-    // If genre is specified, ALWAYS query the dedicated genre endpoint to guarantee genre accuracy!
+    // 1. Choose primary API endpoint based on requested filters
     let endpoint = "/v1/api/danh-sach/phim-moi-cap-nhat";
     if (options?.genre === "hoat-hinh" || (options?.type as string) === "hoat-hinh") {
       endpoint = "/v1/api/danh-sach/hoat-hinh";
-    } else if (options?.genre) {
-      endpoint = `/v1/api/the-loai/${encodeURIComponent(options.genre)}`;
-    } else if (options?.country) {
-      endpoint = `/v1/api/quoc-gia/${encodeURIComponent(options.country)}`;
     } else if (options?.type === "series") {
       endpoint = "/v1/api/danh-sach/phim-bo";
     } else if (options?.type === "single") {
       endpoint = "/v1/api/danh-sach/phim-le";
+    } else if (options?.genre) {
+      endpoint = `/v1/api/the-loai/${encodeURIComponent(options.genre)}`;
+    } else if (options?.country) {
+      endpoint = `/v1/api/quoc-gia/${encodeURIComponent(options.country)}`;
+    } else if (options?.year) {
+      endpoint = `/v1/api/nam/${encodeURIComponent(options.year)}`;
     }
 
     const searchParams = new URLSearchParams();
     searchParams.set("page", String(page));
     searchParams.set("limit", String(limit));
 
-    // Append country if not already the endpoint
+    // Append category/genre if not already the base endpoint
+    if (options?.genre && !endpoint.includes("/the-loai/") && !endpoint.includes("/hoat-hinh")) {
+      searchParams.set("category", options.genre);
+    }
+
+    // Append country if not already the base endpoint
     if (options?.country && !endpoint.includes("/quoc-gia/")) {
       searchParams.set("country", options.country);
     }
 
-    // Append year
-    if (options?.year) {
+    // Append year if not already the base endpoint
+    if (options?.year && !endpoint.includes("/nam/")) {
       searchParams.set("year", String(options.year));
     }
 
@@ -834,39 +840,30 @@ export class KkphimService {
         mapped = mapped.filter((m: Movie) => m.type === options.type);
       }
 
-      // 3. Guarantee strict country matching if returned items differ
+      // 3. Guarantee strict country matching
       if (options?.country) {
         const cleanCountry = options.country.toLowerCase().trim();
-        const countryFiltered = mapped.filter((m: Movie) =>
+        mapped = mapped.filter((m: Movie) =>
           m.countrySlug === cleanCountry ||
           m.country?.toLowerCase().includes(cleanCountry.replace(/-/g, " "))
         );
-        if (countryFiltered.length > 0) {
-          mapped = countryFiltered;
-        }
       }
 
       // 4. Guarantee strict year matching
       if (options?.year) {
-        const yearFiltered = mapped.filter((m: Movie) => m.year === options.year);
-        if (yearFiltered.length > 0) {
-          mapped = yearFiltered;
-        }
+        mapped = mapped.filter((m: Movie) => m.year === options.year);
       }
 
       // 5. Guarantee language filtering (Vietsub, Thuyết minh, Lồng tiếng)
       if (options?.language) {
         const langQuery = options.language.toLowerCase();
-        const langFiltered = mapped.filter((m: Movie) => {
+        mapped = mapped.filter((m: Movie) => {
           const l = (m.language || "").toLowerCase();
           if (langQuery === "vietsub") return l.includes("vietsub") || l.includes("phụ đề");
           if (langQuery === "thuyet-minh") return l.includes("thuyết minh");
           if (langQuery === "long-tieng") return l.includes("lồng tiếng");
           return l.includes(langQuery);
         });
-        if (langFiltered.length > 0) {
-          mapped = langFiltered;
-        }
       }
 
       // 6. Guarantee strict rating matching (e.g. IMDb 8.0+)

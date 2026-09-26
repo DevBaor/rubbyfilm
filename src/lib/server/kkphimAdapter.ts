@@ -242,7 +242,15 @@ export function mapKkphimMovie(raw: any, cdnDomain?: string): Movie {
     isHot: raw.chieurap === true || rating >= 8.5,
     isLatest: true,
     isRecommended: rating >= 8.0,
-    views: Math.floor(Math.random() * 800000) + 150000,
+    views: (() => {
+      let hash = 0;
+      const key = raw.slug || raw._id || primaryTitle;
+      for (let i = 0; i < key.length; i++) {
+        hash = (hash * 31 + key.charCodeAt(i)) & 0xfffff;
+      }
+      const votes = (raw.imdb?.vote_count || 0) + (raw.tmdb?.vote_count || 0);
+      return Math.max(12000, votes * 150 + (hash % 500000) + 75000);
+    })(),
     tmdbId: raw.tmdb?.id || undefined,
   };
 }
