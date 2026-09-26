@@ -76,7 +76,7 @@ export default async function YearPage({
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[350px] bg-gradient-to-b from-[#E50000]/10 via-transparent to-transparent blur-[120px] pointer-events-none -z-0" />
 
       {/* Hero Header Section */}
-      <div className="relative z-10 border-b border-[#222222] bg-gradient-to-b from-[#141414] via-[#101010] to-[#0F0F0F] pt-8 pb-10">
+      <div className="relative z-10 border-b border-[#222222] bg-gradient-to-b from-[#141414] via-[#101010] to-[#0F0F0F] pt-24 sm:pt-28 pb-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb Navigation */}
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#8E8E93] mb-4">
