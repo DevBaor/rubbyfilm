@@ -253,12 +253,19 @@ export function Header({ genres = [], countries = [] }: HeaderProps) {
                 if (link.href === "/") {
                   isActive = pathname === "/";
                 } else if (link.href === "/movies?type=single") {
-                  isActive = pathname === "/movies" && currentTypeParam === "single";
+                  isActive = pathname === "/movies" && (currentTypeParam === "single" || !currentTypeParam);
                 } else if (link.href === "/series") {
                   isActive = pathname.startsWith("/series") || (pathname === "/movies" && currentTypeParam === "series");
                 } else {
                   isActive = pathname.startsWith(link.href);
                 }
+
+                const tabClass = cn(
+                  "px-4 py-2 rounded-xl text-sm font-sans font-medium whitespace-nowrap border transition-colors duration-150",
+                  isActive
+                    ? "bg-[#1A1A1A] text-white border-[#2E2E2E] shadow-sm"
+                    : "text-[#9CA3AF] hover:text-white border-transparent hover:bg-white/[0.04]"
+                );
 
                 if (link.href === "/") {
                   return (
@@ -266,12 +273,7 @@ export function Header({ genres = [], countries = [] }: HeaderProps) {
                       key={link.href}
                       href="/"
                       onClick={handleHomeClick}
-                      className={cn(
-                        "px-4 py-2 rounded-xl text-sm font-sans transition-all duration-200 whitespace-nowrap",
-                        isActive
-                          ? "bg-[#1A1A1A] text-[#F9FAFB] font-semibold border border-[#262626] shadow-sm"
-                          : "text-[#D1D5DB] font-medium hover:text-[#F9FAFB] hover:bg-white/[0.04]"
-                      )}
+                      className={tabClass}
                     >
                       {link.label}
                     </Link>
@@ -282,12 +284,7 @@ export function Header({ genres = [], countries = [] }: HeaderProps) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={cn(
-                      "px-4 py-2 rounded-xl text-sm font-sans transition-all duration-200 whitespace-nowrap",
-                      isActive
-                        ? "bg-[#1A1A1A] text-[#F9FAFB] font-semibold border border-[#262626] shadow-sm"
-                        : "text-[#D1D5DB] font-medium hover:text-[#F9FAFB] hover:bg-white/[0.04]"
-                    )}
+                    className={tabClass}
                   >
                     {link.label}
                   </Link>
@@ -647,7 +644,7 @@ export function Header({ genres = [], countries = [] }: HeaderProps) {
                 if (link.href === "/") {
                   isActive = pathname === "/";
                 } else if (link.href === "/movies?type=single") {
-                  isActive = pathname === "/movies" && currentTypeParam === "single";
+                  isActive = pathname === "/movies" && (currentTypeParam === "single" || !currentTypeParam);
                 } else if (link.href === "/series") {
                   isActive = pathname.startsWith("/series") || (pathname === "/movies" && currentTypeParam === "series");
                 } else {
@@ -663,7 +660,7 @@ export function Header({ genres = [], countries = [] }: HeaderProps) {
                 };
 
                 const linkClasses = cn(
-                  "group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-150",
                   isActive
                     ? "bg-gradient-to-r from-[#E50000]/20 via-[#1C1C1C] to-[#141414] text-white border border-[#E50000]/40 shadow-sm"
                     : "text-[#B3B3B3] hover:text-white hover:bg-white/[0.04] border border-transparent"
