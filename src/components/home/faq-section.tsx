@@ -53,13 +53,6 @@ const faqs: FaqItem[] = [
     answer:
       "Hệ thống cập nhật phim mới liên tục mỗi ngày, bao gồm các tập phim bộ mới phát sóng, phim chiếu rạp vừa ra mắt kèm bản phụ đề Vietsub và lồng tiếng chuẩn xác.",
   },
-  {
-    id: "faq-7",
-    number: "07",
-    question: "Tôi có thể xem RubbyFilm trên những thiết bị nào?",
-    answer:
-      "RubbyFilm tương thích hoàn hảo trên mọi nền tảng: Điện thoại (iOS, Android), Máy tính bảng (iPad, Tablet), Laptop, PC và Smart TV (Android TV, Apple TV, Samsung, LG) trực tiếp qua trình duyệt web mà không cần cài đặt thêm ứng dụng.",
-  },
 ];
 
 export function FaqSection() {
