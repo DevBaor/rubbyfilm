@@ -5,7 +5,7 @@ import { MovieRow } from "@/components/movie/movie-row";
 import { ContinueWatchingRow } from "@/components/movie/continue-watching-row";
 import { TrendingSection } from "@/components/home/trending-section";
 import { EditorialSpotlight } from "@/components/home/editorial-spotlight";
-import { CategoryCards } from "@/components/home/category-cards";
+import { YearDiscovery } from "@/components/home/year-discovery";
 import { DevicesSection } from "@/components/home/devices-section";
 import { FaqSection } from "@/components/home/faq-section";
 import { StreamCta } from "@/components/home/stream-cta";
@@ -182,19 +182,10 @@ export default async function HomePage() {
       {/* 3. Continue Watching (Rendered only when user has watch history) */}
       <ContinueWatchingRow />
 
-      {/* 4. StreamVibe Iconic 4-Poster Category Explorer */}
-      <CategoryCards
-        actionMovies={actionMovies}
-        animeMovies={animeMovies}
-        romanceMovies={homeData.romance || []}
-        seriesMovies={seriesMovies}
-        singleMovies={singleMovies}
-      />
-
-      {/* 5. Trending Now with Top 10 Ranking */}
+      {/* 4. Trending Now with Top 10 Ranking */}
       {trendingMovies.length > 0 && <TrendingSection movies={trendingMovies} />}
 
-      {/* 6. Phim Mới Cập Nhật */}
+      {/* 5. Phim Mới Cập Nhật */}
       {latestMovies.length > 0 && (
         <MovieRow
           id="latest"
@@ -204,6 +195,9 @@ export default async function HomePage() {
           viewAllHref="/movies?sort=latest"
         />
       )}
+
+      {/* 6. Phân Loại Phim Theo Năm Phát Hành (Year Discovery) */}
+      <YearDiscovery />
 
       {/* 7. Editorial Spotlight: Panoramic artwork showcase (Auto-play Carousel) */}
       {spotlightMovies.length > 0 && <EditorialSpotlight movies={spotlightMovies} />}
