@@ -40,7 +40,7 @@ export async function getTmdbBackdropUrl(
       if (fallbackRes.ok) {
         const data = await fallbackRes.json();
         if (data.backdrop_path) {
-          const url = `${TMDB_IMAGE_ORIGINAL}${data.backdrop_path}`;
+          const url = `${TMDB_IMAGE_W1280}${data.backdrop_path}`;
           tmdbBackdropCache.set(cacheKey, url);
           return url;
         }
@@ -50,7 +50,7 @@ export async function getTmdbBackdropUrl(
 
     const data = await res.json();
     if (data.backdrop_path) {
-      const url = `${TMDB_IMAGE_ORIGINAL}${data.backdrop_path}`;
+      const url = `${TMDB_IMAGE_W1280}${data.backdrop_path}`;
       tmdbBackdropCache.set(cacheKey, url);
       return url;
     }
@@ -60,7 +60,7 @@ export async function getTmdbBackdropUrl(
     if (imgRes.ok) {
       const imgData = await imgRes.json();
       if (imgData.backdrops && imgData.backdrops.length > 0) {
-        const url = `${TMDB_IMAGE_ORIGINAL}${imgData.backdrops[0].file_path}`;
+        const url = `${TMDB_IMAGE_W1280}${imgData.backdrops[0].file_path}`;
         tmdbBackdropCache.set(cacheKey, url);
         return url;
       }

@@ -51,7 +51,7 @@ export function MovieHero({ movies }: MovieHeroProps) {
     if (totalSlides <= 1 || isPaused) return;
     const timer = setInterval(() => {
       nextSlide();
-    }, 3500);
+    }, 6500);
     return () => clearInterval(timer);
   }, [totalSlides, isPaused, nextSlide, currentIndex]);
 
@@ -116,8 +116,11 @@ export function MovieHero({ movies }: MovieHeroProps) {
       {/* TopHim Style Cinematic Multi-Plane Parallax Slides */}
       {heroMovies.map((m, idx) => {
         const isCurrent = idx === currentIndex;
+        const isNearby =
+          Math.abs(idx - currentIndex) <= 1 ||
+          (currentIndex === 0 && idx === totalSlides - 1) ||
+          (currentIndex === totalSlides - 1 && idx === 0);
         const isFav = mounted ? isInList(m.id) : false;
-
         return (
           <div
             key={m.id || idx}
@@ -138,42 +141,39 @@ export function MovieHero({ movies }: MovieHeroProps) {
               )}
             >
               {/* Mobile View: High-res Vertical Key Art with Ambient Glow (Prevents 2.4x stretching and pixelation) */}
+              {/* Mobile View: High-res Vertical Key Art with Ambient Glow */}
               <div className="sm:hidden absolute inset-0">
-                {/* Layer A: Ambient backdrop glow */}
-                <Image
-                  src={m.backdropUrl || m.posterUrl || FALLBACK_BACKDROP}
-                  alt=""
-                  fill
-                  unoptimized
-                  className="object-cover blur-2xl opacity-40 scale-125"
-                />
-                {/* Layer B: Crisp vertical poster art, natural portrait aspect ratio */}
-                <Image
-                  src={m.posterUrl || m.backdropUrl || FALLBACK_POSTER}
-                  alt={m.title || "Phim nổi bật"}
-                  fill
-                  priority={idx <= 1}
-                  unoptimized
-                  className="object-cover object-top filter contrast-[1.05] brightness-[0.92]"
-                  sizes="(max-width: 640px) 100vw, 1px"
-                />
+                {/* Layer A: Pure CSS ambient glow (zero GPU memory footprint, prevents mobile crash) */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#E50000]/10 via-[#0F0F0F]/50 to-[#0F0F0F] pointer-events-none" />
+                {/* Layer B: Crisp vertical poster art */}
+                {isNearby && (
+                  <Image
+                    src={m.posterUrl || m.backdropUrl || FALLBACK_POSTER}
+                    alt={m.title || "Phim nổi bật"}
+                    fill
+                    priority={idx === 0}
+                    className="object-cover object-top filter contrast-[1.05] brightness-[0.92]"
+                    sizes="(max-width: 640px) 100vw, 1px"
+                  />
+                )}
               </div>
 
               {/* Desktop & Tablet: 16:9 Cinematic Landscape Backdrop */}
               <div className="hidden sm:block absolute inset-0">
-                <Image
-                  src={m.backdropUrl || FALLBACK_BACKDROP}
-                  alt={m.title || "Phim nổi bật"}
-                  fill
-                  priority={idx <= 1}
-                  unoptimized
-                  className="object-cover object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02]"
-                  sizes="100vw"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = FALLBACK_BACKDROP;
-                  }}
-                />
+                {isNearby && (
+                  <Image
+                    src={m.backdropUrl || FALLBACK_BACKDROP}
+                    alt={m.title || "Phim nổi bật"}
+                    fill
+                    priority={idx === 0}
+                    className="object-cover object-[center_30%] filter contrast-[1.08] saturate-[1.06] brightness-[1.02]"
+                    sizes="100vw"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = FALLBACK_BACKDROP;
+                    }}
+                  />
+                )}
               </div>
             </div>
 
