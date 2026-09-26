@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Calendar,
   Sparkles,
@@ -29,6 +30,7 @@ interface YearCardItem {
   hoverBorder: string;
   glowColor: string;
   tagColorClass: string;
+  bgImage?: string;
 }
 
 const FEATURED_YEARS: YearCardItem[] = [
@@ -46,6 +48,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(229, 0, 0, 0.8)",
     glowColor: "rgba(229, 0, 0, 0.35)",
     tagColorClass: "text-[#FECF59] bg-[#E50000]/30 border-[#FECF59]/40 font-black",
+    bgImage: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
   },
   {
     year: 2025,
@@ -60,6 +63,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(234, 88, 12, 0.65)",
     glowColor: "rgba(234, 88, 12, 0.25)",
     tagColorClass: "text-orange-300 bg-orange-500/15 border-orange-500/30",
+    bgImage: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&auto=format&fit=crop&q=80",
   },
   {
     year: 2024,
@@ -74,6 +78,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(147, 51, 234, 0.65)",
     glowColor: "rgba(147, 51, 234, 0.25)",
     tagColorClass: "text-purple-300 bg-purple-500/15 border-purple-500/30",
+    bgImage: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=600&auto=format&fit=crop&q=80",
   },
   {
     year: 2023,
@@ -88,6 +93,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(37, 99, 235, 0.65)",
     glowColor: "rgba(37, 99, 235, 0.25)",
     tagColorClass: "text-blue-300 bg-blue-500/15 border-blue-500/30",
+    bgImage: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&auto=format&fit=crop&q=80",
   },
   {
     year: 2022,
@@ -102,6 +108,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(13, 148, 136, 0.65)",
     glowColor: "rgba(13, 148, 136, 0.25)",
     tagColorClass: "text-teal-300 bg-teal-500/15 border-teal-500/30",
+    bgImage: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600&auto=format&fit=crop&q=80",
   },
   {
     year: "kinh-dien",
@@ -116,6 +123,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(202, 138, 4, 0.65)",
     glowColor: "rgba(202, 138, 4, 0.25)",
     tagColorClass: "text-amber-300 bg-amber-500/15 border-amber-500/30",
+    bgImage: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -173,20 +181,43 @@ export function YearDiscovery() {
               <Link
                 key={String(item.year)}
                 href={item.href}
-                className="group relative overflow-hidden rounded-2xl p-4 sm:p-4.5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[155px]"
+                className="group relative overflow-hidden rounded-2xl p-4 sm:p-4.5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-[140px] sm:min-h-[155px] bg-[#0F0F0F]"
                 style={{
-                  background: item.gradient,
                   borderColor: item.borderColor,
                 }}
               >
+                {/* Background Image & Ambient Gradient Overlay */}
+                {item.bgImage ? (
+                  <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <Image
+                      src={item.bgImage}
+                      alt={item.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      className="object-cover opacity-25 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 ease-out"
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: item.gradient,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="absolute inset-0 z-0 pointer-events-none"
+                    style={{ background: item.gradient }}
+                  />
+                )}
+
                 {/* Background Watermark Icon */}
-                <div className="absolute -bottom-2 -right-2 opacity-[0.08] group-hover:opacity-[0.16] transition-opacity duration-300 pointer-events-none">
+                <div className="absolute -bottom-2 -right-2 z-[1] opacity-[0.08] group-hover:opacity-[0.16] transition-opacity duration-300 pointer-events-none">
                   <WatermarkIcon className="w-24 h-24 stroke-[1.2]" />
                 </div>
 
                 {/* Ambient Glow Orb */}
                 <div
-                  className="absolute -top-10 -left-10 w-24 h-24 rounded-full blur-2xl opacity-40 group-hover:opacity-75 transition-opacity pointer-events-none"
+                  className="absolute -top-10 -left-10 z-[1] w-24 h-24 rounded-full blur-2xl opacity-40 group-hover:opacity-75 transition-opacity pointer-events-none"
                   style={{ background: item.glowColor }}
                 />
 
