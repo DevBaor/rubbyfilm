@@ -14,6 +14,36 @@ export const AUTH_COOKIE_NAME = "rubbyfilm_session";
 export const OAUTH_STATE_COOKIE_NAME = "rubbyfilm_oauth_state";
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
+const AUTH_SECRET =
+  process.env.AUTH_SECRET ||
+  process.env.GOOGLE_CLIENT_SECRET ||
+  process.env.FACEBOOK_CLIENT_SECRET ||
+  "rubbyfilm_jwt_secret_fallback_key_2026";
+
+export function signOAuthState(payload: Record<string, any>): string {
+  const data = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const sig = crypto.createHmac("sha256", AUTH_SECRET).update(data).digest("base64url");
+  return `${data}.${sig}`;
+}
+
+export function verifyOAuthState(stateStr: string): Record<string, any> | null {
+  if (!stateStr) return null;
+  try {
+    const parts = stateStr.split(".");
+    if (parts.length === 2) {
+      const [data, sig] = parts;
+      const expectedSig = crypto.createHmac("sha256", AUTH_SECRET).update(data).digest("base64url");
+      if (sig === expectedSig) {
+        const payload = JSON.parse(Buffer.from(data, "base64url").toString("utf-8"));
+        if (payload.timestamp && Date.now() - payload.timestamp < 15 * 60 * 1000) {
+          return payload;
+        }
+      }
+    }
+  } catch {}
+  return null;
+}
+
 const DATA_DIR = path.join(process.cwd(), "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "sessions.json");
@@ -390,8 +420,16 @@ class AuthRepository {
   }
 
   public async createSession(user: AuthUser): Promise<AuthSession> {
-    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = Date.now() + SESSION_DURATION_MS;
+    const payload = {
+      sub: user.id,
+      user,
+      exp: expiresAt,
+      iat: Date.now(),
+    };
+    const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    const sig = crypto.createHmac("sha256", AUTH_SECRET).update(payloadBase64).digest("base64url");
+    const token = `${payloadBase64}.${sig}`;
 
     const session: AuthSession = {
       token,
@@ -405,22 +443,50 @@ class AuthRepository {
   }
 
   public async getSession(token: string): Promise<AuthSession | null> {
-    const session = this.sessions.get(token);
-    if (!session) return null;
+    if (!token) return null;
 
-    if (Date.now() > session.expiresAt) {
-      this.sessions.delete(token);
-      this.saveSessionsToDisk();
-      return null;
+    // 1. Check in-memory first
+    const cached = this.sessions.get(token);
+    if (cached) {
+      if (Date.now() > cached.expiresAt) {
+        this.sessions.delete(token);
+        this.saveSessionsToDisk();
+        return null;
+      }
+      const latestUser = await this.findById(cached.user.id);
+      if (latestUser) {
+        cached.user = this.toSafeUser(latestUser);
+      }
+      return cached;
     }
 
-    // Always fetch latest user state to reflect newly linked/unlinked providers
-    const latestUser = await this.findById(session.user.id);
-    if (latestUser) {
-      session.user = this.toSafeUser(latestUser);
-    }
+    // 2. Stateless HMAC JWT verification (Essential for Vercel Serverless / multi-instance lambdas)
+    try {
+      const parts = token.split(".");
+      if (parts.length === 2) {
+        const [payloadBase64, sig] = parts;
+        const expectedSig = crypto.createHmac("sha256", AUTH_SECRET).update(payloadBase64).digest("base64url");
+        if (sig === expectedSig) {
+          const payload = JSON.parse(Buffer.from(payloadBase64, "base64url").toString("utf-8"));
+          if (payload.exp && Date.now() <= payload.exp && payload.user) {
+            let sessionUser: AuthUser = payload.user;
+            const latestUser = await this.findById(sessionUser.id);
+            if (latestUser) {
+              sessionUser = this.toSafeUser(latestUser);
+            }
+            const session: AuthSession = {
+              token,
+              user: sessionUser,
+              expiresAt: payload.exp,
+            };
+            this.sessions.set(token, session);
+            return session;
+          }
+        }
+      }
+    } catch {}
 
-    return session;
+    return null;
   }
 
   public async deleteSession(token: string): Promise<void> {

@@ -3,6 +3,7 @@ import {
   authRepository,
   AUTH_COOKIE_NAME,
   OAUTH_STATE_COOKIE_NAME,
+  verifyOAuthState,
 } from "@/lib/auth/authService";
 import { OAuthProfile } from "@/lib/auth/authTypes";
 
@@ -22,30 +23,46 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Validate provider
   if (provider !== "google" && provider !== "facebook") {
-    return NextResponse.redirect(new URL("/login?error=INVALID_PROVIDER", request.url));
+    return NextResponse.redirect(new URL("/?auth=login&error=INVALID_PROVIDER", request.url));
   }
 
-  // 1. Verify CSRF State
+  // 1. Verify CSRF State via HMAC signature and/or cookie
   const storedStateCookie = request.cookies.get(OAUTH_STATE_COOKIE_NAME)?.value;
+  const verifiedState = state ? verifyOAuthState(state) : null;
+  const isStateValid = Boolean(
+    verifiedState ||
+    (state && storedStateCookie && state === storedStateCookie)
+  );
 
-  if (!state || !storedStateCookie || state !== storedStateCookie) {
-    return NextResponse.redirect(new URL("/login?error=OAUTH_STATE_MISMATCH", request.url));
+  if (!isStateValid) {
+    const errorUrl = new URL(
+      `/?auth=login&error=OAUTH_STATE_MISMATCH&provider=${provider}`,
+      request.url
+    );
+    const response = NextResponse.redirect(errorUrl);
+    response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+    return response;
   }
 
   // Parse state payload
   let callbackUrl = "/";
-  try {
-    const parsedState = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
-    callbackUrl = parsedState.callbackUrl || "/";
-  } catch (e) {
-    callbackUrl = "/";
+  if (verifiedState?.callbackUrl) {
+    callbackUrl = verifiedState.callbackUrl;
+  } else if (state) {
+    try {
+      const raw = state.includes(".") ? state.split(".")[0] : state;
+      const parsedState = JSON.parse(Buffer.from(raw, "base64url").toString("utf-8"));
+      callbackUrl = parsedState.callbackUrl || "/";
+    } catch (e) {
+      callbackUrl = "/";
+    }
   }
 
   // 2. Handle User Cancellation / Provider Errors
   if (oauthError) {
     const isCancelled = oauthError === "access_denied";
     const redirectUrl = new URL(
-      `/login?error=${isCancelled ? "OAUTH_CANCELLED" : "OAUTH_FAILED"}&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      `/?auth=login&error=${isCancelled ? "OAUTH_CANCELLED" : "OAUTH_FAILED"}&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
       request.url
     );
     const response = NextResponse.redirect(redirectUrl);
@@ -55,7 +72,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (!code) {
     const response = NextResponse.redirect(
-      new URL(`/login?error=OAUTH_MISSING_CODE&provider=${provider}`, request.url)
+      new URL(`/?auth=login&error=OAUTH_MISSING_CODE&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`, request.url)
     );
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
     return response;
@@ -72,17 +89,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (!clientId || !clientSecret) {
     const response = NextResponse.redirect(
-      new URL(`/login?error=OAUTH_NOT_CONFIGURED&provider=${provider}`, request.url)
+      new URL(`/?auth=login&error=OAUTH_NOT_CONFIGURED&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`, request.url)
     );
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
     return response;
   }
 
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:3000";
-  const protocol = request.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
-  const pathname = request.nextUrl.pathname;
-  const redirectUri = `${origin}${pathname}`;
+  const protocol = request.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+  const origin = isLocal ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`);
+  const redirectUri = verifiedState?.redirectUri || `${origin}${request.nextUrl.pathname}`;
 
   let profile: OAuthProfile;
 
@@ -178,7 +195,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     response.cookies.set(AUTH_COOKIE_NAME, session.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production" && !isLocal,
       sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -189,7 +206,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   } catch (error: any) {
     console.error(`OAuth callback error [${provider}]:`, error?.message || error);
     const errorUrl = new URL(
-      `/login?error=OAUTH_EXCHANGE_ERROR&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      `/?auth=login&error=OAUTH_EXCHANGE_ERROR&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
       request.url
     );
     const response = NextResponse.redirect(errorUrl);

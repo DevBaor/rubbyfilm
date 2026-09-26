@@ -58,10 +58,18 @@ function LoginForm() {
       if (isAuthenticated) {
         router.replace(callbackUrl);
       } else {
-        router.replace("/?auth=login");
+        const err = searchParams.get("error");
+        const prov = searchParams.get("provider");
+        if (err) {
+          router.replace(
+            `/?auth=login&error=${encodeURIComponent(err)}${prov ? `&provider=${encodeURIComponent(prov)}` : ""}`
+          );
+        } else {
+          router.replace("/?auth=login");
+        }
       }
     }
-  }, [isAuthenticated, isAuthLoading, router, callbackUrl]);
+  }, [isAuthenticated, isAuthLoading, router, callbackUrl, searchParams]);
 
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};

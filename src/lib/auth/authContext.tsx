@@ -105,13 +105,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : authSuccess === "facebook"
             ? "Facebook"
             : "tài khoản mạng xã hội";
+        fetchSession();
         toast.success("Đăng nhập thành công!", `Chào mừng bạn đã đăng nhập qua ${providerName}.`);
         url.searchParams.delete("auth_success");
         const cleanUrl = url.pathname + (url.search ? url.search : "") + url.hash;
         window.history.replaceState({}, "", cleanUrl);
       }
+
+      const authError = url.searchParams.get("error");
+      const errorProvider = url.searchParams.get("provider");
+      if (authError) {
+        const pName =
+          errorProvider === "google"
+            ? "Google"
+            : errorProvider === "facebook"
+            ? "Facebook"
+            : "tài khoản";
+        let msg = `Đăng nhập qua ${pName} không thành công.`;
+        if (authError === "OAUTH_CANCELLED") {
+          msg = `Bạn đã hủy yêu cầu đăng nhập qua ${pName}.`;
+        } else if (authError === "OAUTH_NOT_CONFIGURED") {
+          msg = `Tính năng đăng nhập qua ${pName} chưa được cấu hình API keys.`;
+        } else if (authError === "OAUTH_STATE_MISMATCH") {
+          msg = "Phiên xác thực bảo mật không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.";
+        } else if (authError === "OAUTH_EXCHANGE_ERROR" || authError === "OAUTH_FAILED") {
+          msg = `Không thể trao đổi xác thực với ${pName}. Vui lòng thử lại.`;
+        }
+        toast.error("Lỗi đăng nhập", msg);
+        url.searchParams.delete("error");
+        if (errorProvider) url.searchParams.delete("provider");
+        const cleanUrl = url.pathname + (url.search ? url.search : "") + url.hash;
+        window.history.replaceState({}, "", cleanUrl);
+      }
     } catch {}
-  }, [toast, openAuthModal]);
+  }, [toast, openAuthModal, fetchSession]);
 
   const login = async (input: LoginInput) => {
     try {

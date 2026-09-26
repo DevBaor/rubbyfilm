@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { OAUTH_STATE_COOKIE_NAME } from "@/lib/auth/authService";
+import { OAUTH_STATE_COOKIE_NAME, signOAuthState } from "@/lib/auth/authService";
 
 interface RouteParams {
   params: Promise<{
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   if (provider !== "google" && provider !== "facebook") {
     return NextResponse.redirect(
       new URL(
-        `/login?error=INVALID_PROVIDER&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        `/?auth=login&error=INVALID_PROVIDER&callbackUrl=${encodeURIComponent(callbackUrl)}`,
         request.url
       )
     );
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   // Gracefully handle unconfigured credentials with an informative user notification
   if (!clientId || !clientSecret || clientId.startsWith("your_") || clientSecret.startsWith("your_")) {
     const errorUrl = new URL(
-      `/login?error=OAUTH_NOT_CONFIGURED&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      `/?auth=login&error=OAUTH_NOT_CONFIGURED&provider=${provider}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
       request.url
     );
     return NextResponse.redirect(errorUrl);
@@ -43,20 +43,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Determine Origin & Redirect URI
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:3000";
-  const protocol = request.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+  const protocol = request.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
+  // Prioritize actual request host on localhost/LAN, use NEXT_PUBLIC_SITE_URL in production if set
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+  const origin = isLocal ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`);
   const redirectUri = `${origin}/api/auth/oauth/${provider}/callback`;
 
-  // Generate cryptographically secure state
-  const stateRandom = crypto.randomBytes(24).toString("hex");
-  const statePayload = Buffer.from(
-    JSON.stringify({
-      state: stateRandom,
-      provider,
-      callbackUrl,
-      timestamp: Date.now(),
-    })
-  ).toString("base64url");
+  // Generate cryptographically secure signed state
+  const stateRandom = crypto.randomBytes(16).toString("hex");
+  const statePayload = signOAuthState({
+    state: stateRandom,
+    provider,
+    callbackUrl,
+    redirectUri,
+    timestamp: Date.now(),
+  });
 
   let authUrl = "";
 
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: "public_profile",
+      scope: "email,public_profile",
       state: statePayload,
     });
     authUrl = `https://www.facebook.com/v19.0/dialog/oauth?${fbParams.toString()}`;
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   // Set secure HttpOnly state cookie (10 minutes expiry)
   response.cookies.set(OAUTH_STATE_COOKIE_NAME, statePayload, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production" && !isLocal,
     sameSite: "lax",
     path: "/",
     maxAge: 10 * 60, // 10 minutes

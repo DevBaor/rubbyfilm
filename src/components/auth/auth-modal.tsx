@@ -70,6 +70,33 @@ export function AuthModal() {
   const [forgotError, setForgotError] = React.useState("");
   const [isForgotSubmitting, setIsForgotSubmitting] = React.useState(false);
 
+  // Catch OAuth redirect errors and display in modal
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const url = new URL(window.location.href);
+      const oauthError = url.searchParams.get("error");
+      const provider = url.searchParams.get("provider");
+      const providerName =
+        provider === "google" ? "Google" : provider === "facebook" ? "Facebook" : "Mạng xã hội";
+
+      if (oauthError) {
+        let msg = `Đăng nhập qua ${providerName} thất bại.`;
+        if (oauthError === "OAUTH_NOT_CONFIGURED") {
+          msg = `Tính năng đăng nhập qua ${providerName} chưa được cấu hình Client ID / Secret trên máy chủ.`;
+        } else if (oauthError === "OAUTH_CANCELLED") {
+          msg = `Bạn đã hủy quá trình đăng nhập qua ${providerName}.`;
+        } else if (oauthError === "OAUTH_STATE_MISMATCH") {
+          msg = "Phiên xác thực bảo mật không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.";
+        } else if (oauthError === "OAUTH_EXCHANGE_ERROR" || oauthError === "OAUTH_FAILED") {
+          msg = `Không thể kết nối và trao đổi xác thực với ${providerName}. Vui lòng thử lại.`;
+        }
+        setLoginError(msg);
+        setRegError(msg);
+      }
+    } catch {}
+  }, [isAuthModalOpen]);
+
   const handleVerifyForgotEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotError("");
@@ -797,6 +824,11 @@ export function AuthModal() {
                 )}
               </button>
             </form>
+
+            {/* Social Logins */}
+            <div className="mt-4">
+              <SocialAuthButtons disabled={isRegSubmitting} dividerText="HOẶC ĐĂNG KÝ VỚI" />
+            </div>
 
             {/* Switch Footer */}
             <div className="mt-5 text-center text-xs text-[#9CA3AF]">

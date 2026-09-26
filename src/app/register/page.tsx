@@ -67,10 +67,18 @@ function RegisterForm() {
       if (isAuthenticated) {
         router.replace(callbackUrl);
       } else {
-        router.replace("/?auth=register");
+        const err = searchParams.get("error");
+        const prov = searchParams.get("provider");
+        if (err) {
+          router.replace(
+            `/?auth=register&error=${encodeURIComponent(err)}${prov ? `&provider=${encodeURIComponent(prov)}` : ""}`
+          );
+        } else {
+          router.replace("/?auth=register");
+        }
       }
     }
-  }, [isAuthenticated, isAuthLoading, router, callbackUrl]);
+  }, [isAuthenticated, isAuthLoading, router, callbackUrl, searchParams]);
 
   // Password strength calculation
   const passwordStrength = React.useMemo(() => {
