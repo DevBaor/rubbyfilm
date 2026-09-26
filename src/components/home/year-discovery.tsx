@@ -21,7 +21,6 @@ interface YearCardItem {
   href: string;
   tag: string;
   tagIcon: LucideIcon;
-  watermarkIcon: LucideIcon;
   title: string;
   subtitle: string;
   highlight?: boolean;
@@ -39,7 +38,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/year/2026",
     tag: "SIÊU HOT 2026",
     tagIcon: Sparkles,
-    watermarkIcon: Flame,
     title: "Điện Ảnh 2026",
     subtitle: "Khởi chiếu rạp mới nhất",
     highlight: true,
@@ -55,7 +53,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/year/2025",
     tag: "BOM TẤN",
     tagIcon: Flame,
-    watermarkIcon: Film,
     title: "Điện Ảnh 2025",
     subtitle: "Cơn sốt phòng vé toàn cầu",
     gradient: "linear-gradient(135deg, rgba(234, 88, 12, 0.4) 0%, rgba(20, 10, 8, 0.96) 80%)",
@@ -70,7 +67,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/year/2024",
     tag: "ĐẶC SẮC",
     tagIcon: Award,
-    watermarkIcon: Award,
     title: "Điện Ảnh 2024",
     subtitle: "Những tác phẩm đột phá",
     gradient: "linear-gradient(135deg, rgba(147, 51, 234, 0.4) 0%, rgba(18, 10, 24, 0.96) 80%)",
@@ -85,7 +81,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/year/2023",
     tag: "TUYỂN CHỌN",
     tagIcon: Film,
-    watermarkIcon: Clock,
     title: "Điện Ảnh 2023",
     subtitle: "Tác phẩm ghi dấu ấn",
     gradient: "linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(10, 14, 26, 0.96) 80%)",
@@ -100,7 +95,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/year/2022",
     tag: "ĂN KHÁCH",
     tagIcon: Clock,
-    watermarkIcon: History,
     title: "Điện Ảnh 2022",
     subtitle: "Kịch tính & giàu cảm xúc",
     gradient: "linear-gradient(135deg, rgba(13, 148, 136, 0.4) 0%, rgba(8, 20, 18, 0.96) 80%)",
@@ -115,7 +109,6 @@ const FEATURED_YEARS: YearCardItem[] = [
     href: "/movies?sort=year_asc&type=single",
     tag: "KINH ĐIỂN",
     tagIcon: History,
-    watermarkIcon: Award,
     title: "Phim Kinh Điển",
     subtitle: "Những kiệt tác bất hủ",
     gradient: "linear-gradient(135deg, rgba(202, 138, 4, 0.4) 0%, rgba(24, 18, 8, 0.96) 80%)",
@@ -175,7 +168,6 @@ export function YearDiscovery() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {FEATURED_YEARS.map((item) => {
             const TagIcon = item.tagIcon;
-            const WatermarkIcon = item.watermarkIcon;
 
             return (
               <Link
@@ -211,10 +203,6 @@ export function YearDiscovery() {
                   />
                 )}
 
-                {/* Background Watermark Icon */}
-                <div className="absolute -bottom-2 -right-2 z-[1] opacity-[0.08] group-hover:opacity-[0.16] transition-opacity duration-300 pointer-events-none">
-                  <WatermarkIcon className="w-24 h-24 stroke-[1.2]" />
-                </div>
 
                 {/* Ambient Glow Orb */}
                 <div
