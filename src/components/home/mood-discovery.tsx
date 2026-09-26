@@ -31,7 +31,7 @@ const CURATION_CARDS: CurationCard[] = [
     hoverBorder: "rgba(225, 29, 72, 0.55)",
     glowColor: "rgba(225, 29, 72, 0.22)",
     tagColorClass: "text-rose-300 bg-rose-500/15 border-rose-500/25",
-    bgImage: "https://image.tmdb.org/t/p/w780/9zcbqSxdsRMZWHYtyCd1nXPr2xq.jpg",
+    bgImage: "https://image.tmdb.org/t/p/w780/3yEHM2HT2vrUtO93YzTJNgEfiZG.jpg",
   },
   {
     id: "bom-tan-au-my",
@@ -57,7 +57,7 @@ const CURATION_CARDS: CurationCard[] = [
     hoverBorder: "rgba(245, 158, 11, 0.55)",
     glowColor: "rgba(217, 119, 6, 0.22)",
     tagColorClass: "text-amber-300 bg-amber-500/15 border-amber-500/25",
-    bgImage: "https://image.tmdb.org/t/p/w780/awLnxzHMU7xc1STN1PQWioBVhAi.jpg",
+    bgImage: "https://image.tmdb.org/t/p/w780/ampkwvfwO7o5YMwYAVPKx1PLDaB.jpg",
   },
   {
     id: "thanh-xuan-vuon-truong",
@@ -70,7 +70,7 @@ const CURATION_CARDS: CurationCard[] = [
     hoverBorder: "rgba(244, 63, 94, 0.55)",
     glowColor: "rgba(244, 63, 94, 0.22)",
     tagColorClass: "text-pink-300 bg-pink-500/15 border-pink-500/25",
-    bgImage: "https://image.tmdb.org/t/p/w780/h050XJoiIobaH6bhj3MAhgilkpJ.jpg",
+    bgImage: "https://image.tmdb.org/t/p/w780/wQlJJJ50gKphCci0SmoetUXmJN4.jpg",
   },
   {
     id: "anime-nhat-ban",
@@ -129,7 +129,7 @@ export function MoodDiscovery() {
                     alt={card.title}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    className="object-cover opacity-35 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500 ease-out"
+                    className="object-cover opacity-40 group-hover:opacity-65 group-hover:scale-110 transition-all duration-500 ease-out"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
                   <div
