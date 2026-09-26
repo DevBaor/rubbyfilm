@@ -48,7 +48,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(229, 0, 0, 0.8)",
     glowColor: "rgba(229, 0, 0, 0.35)",
     tagColorClass: "text-[#FECF59] bg-[#E50000]/30 border-[#FECF59]/40 font-black",
-    bgImage: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/eZ239CUp1d6OryZEBPnO2n87gMG.jpg",
   },
   {
     year: 2025,
@@ -63,7 +63,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(234, 88, 12, 0.65)",
     glowColor: "rgba(234, 88, 12, 0.25)",
     tagColorClass: "text-orange-300 bg-orange-500/15 border-orange-500/30",
-    bgImage: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/kJsPVzdyBrYHLomuNv5SJDXUQ2f.jpg",
   },
   {
     year: 2024,
@@ -78,7 +78,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(147, 51, 234, 0.65)",
     glowColor: "rgba(147, 51, 234, 0.25)",
     tagColorClass: "text-purple-300 bg-purple-500/15 border-purple-500/30",
-    bgImage: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/neeNHeXjMF5fXoCJRsOmkNGC7q.jpg",
   },
   {
     year: 2023,
@@ -93,7 +93,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(37, 99, 235, 0.65)",
     glowColor: "rgba(37, 99, 235, 0.25)",
     tagColorClass: "text-blue-300 bg-blue-500/15 border-blue-500/30",
-    bgImage: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/7I6VUdPj6tQECNHdviJkUHD2u89.jpg",
   },
   {
     year: 2022,
@@ -108,7 +108,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(13, 148, 136, 0.65)",
     glowColor: "rgba(13, 148, 136, 0.25)",
     tagColorClass: "text-teal-300 bg-teal-500/15 border-teal-500/30",
-    bgImage: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/rvtdN5XkWAfGX6xDuPL6yYS2seK.jpg",
   },
   {
     year: "kinh-dien",
@@ -123,7 +123,7 @@ const FEATURED_YEARS: YearCardItem[] = [
     hoverBorder: "rgba(202, 138, 4, 0.65)",
     glowColor: "rgba(202, 138, 4, 0.25)",
     tagColorClass: "text-amber-300 bg-amber-500/15 border-amber-500/30",
-    bgImage: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&auto=format&fit=crop&q=80",
+    bgImage: "https://image.tmdb.org/t/p/w780/xXCuto8YVp5RFqBJ7yKmVmLOWpF.jpg",
   },
 ];
 
@@ -194,10 +194,11 @@ export function YearDiscovery() {
                       alt={item.title}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                      className="object-cover opacity-25 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 ease-out"
+                      className="object-cover opacity-35 group-hover:opacity-60 group-hover:scale-110 transition-all duration-500 ease-out"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
                     <div
-                      className="absolute inset-0"
+                      className="absolute inset-0 opacity-80"
                       style={{
                         background: item.gradient,
                       }}
