@@ -310,25 +310,6 @@ export function EditorialSpotlight({ movie, movies }: EditorialSpotlightProps) {
             </div>
           </div>
 
-          {/* Subtle Bottom Indicators Bar */}
-          {totalSlides > 1 && (
-            <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
-              {movieList.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
-                    currentIndex === idx
-                      ? "w-6 bg-[#E50000] shadow-[0_0_8px_rgba(229,0,0,0.8)]"
-                      : "w-1.5 bg-white/20 hover:bg-white/50"
-                  )}
-                  aria-label={`Chuyển tới tiêu điểm ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </section>

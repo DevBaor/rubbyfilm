@@ -379,26 +379,6 @@ export function MovieHero({ movies }: MovieHeroProps) {
       {/* Carousel Navigation (Persistent across slides) */}
       {totalSlides > 1 && (
         <>
-          {/* Mobile Sleek Indicator Dots/Pills (< sm) */}
-          <div className="sm:hidden absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 pointer-events-auto">
-            {heroMovies.map((_, idx) => {
-              const isActive = idx === currentIndex;
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  aria-label={`Chuyển tới phim ${idx + 1}`}
-                  className={cn(
-                    "transition-all duration-300 rounded-full h-1.5 cursor-pointer",
-                    isActive
-                      ? "w-6 bg-[#E50000] shadow-[0_0_8px_rgba(229,0,0,0.8)]"
-                      : "w-1.5 bg-white/30 hover:bg-white/60"
-                  )}
-                />
-              );
-            })}
-          </div>
 
           {/* Desktop & Tablet Rich Thumbnails Container (sm:flex) */}
           <div className="hidden sm:flex absolute bottom-5 sm:bottom-7 left-1/2 -translate-x-1/2 md:left-auto md:right-8 lg:right-10 md:translate-x-0 z-30 items-center pointer-events-auto max-w-[calc(100%-1rem)]">
