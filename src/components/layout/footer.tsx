@@ -286,16 +286,6 @@ export function Footer() {
             <Link href="/history" className="hover:text-white transition-colors text-xs text-[#9CA3AF]">
               Lịch Sử Xem
             </Link>
-            <span className="w-1 h-1 rounded-full bg-[#333]" />
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] border border-[#262626] hover:border-white/30 text-[#D1D5DB] hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm"
-              title="Cuộn lên đầu trang"
-            >
-              <ArrowUp className="w-3.5 h-3.5" />
-              <span>Đầu trang</span>
-            </button>
           </div>
         </div>
       </div>
